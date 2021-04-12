@@ -1,0 +1,17 @@
+*.log
+coregen.cgp
+create_*.tcl
+gen_*.tcl
+*_xmdf.tcl
+*_flist.txt
+*_readme.txt
+*.asy
+*.ncf
+*.sym
+*.vho
+*.xml
+tmp/
+doc/
+example_design/
+implement/
+simulation/

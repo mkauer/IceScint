@@ -89,8 +89,8 @@ begin
 	--h0: for i in 0 to 3 generate k: OBUF port map(O => address_p(i), I => address(i)); end generate;
 
 	y0 : entity work.drs4 --generic map(dummyImplementation => dummyImplementation);
-		port map(notReset0,
-			address, denable0, dwrite0, rsrload0, miso0, mosi0, srclk0, dtap0, plllck0,
+		port map(
+			address, notReset0, denable0, dwrite0, rsrload0, miso0, mosi0, srclk0, dtap0, plllck0,
 			deadTime, trigger, internalTiming, adcClocks, drs4_to_ltm9007_14, drs4_to_eventFifoSystem, drs4_0r, drs4_0w);
 
 	--g1: if drs4_type = "ICE_SCINT" generate

@@ -1223,7 +1223,7 @@ package body types is
 			temp := "0100";
 		elsif (std_match(patternIn, "--01-----")) then
 			temp := "0101";
-		elsif (std_match(patternIn, " - 01------")) then
+		elsif (std_match(patternIn, "-01------")) then
 			temp := "0110";
 		elsif (std_match(patternIn, "01-------")) then
 			temp := "0111";

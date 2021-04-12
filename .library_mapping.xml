@@ -6,4 +6,5 @@
   <Mappings Location="Common Libraries/STD" Library="std"/>
   <Mappings Location="Common Libraries/unisims" Library="unisim"/>
   <Mappings Location="" Library="work"/>
+  <Mappings Location="Common Libraries/XilinxCoreLib" Library="xilinxcorelib"/>
 </com.sigasi.hdt.shared.librarymapping.model:LibraryMappings>
