@@ -20,7 +20,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.numeric_std.all;
-use ieee.std_logic_unsigned.all; -- neu dazu wegen "+"
 use work.types.all;
 
 -- Uncomment the following library declaration if instantiating
@@ -152,7 +151,7 @@ begin
 			process (registerWrite.clock)
 			begin
 				if rising_edge(registerWrite.clock) then
-					triggeradder(64 + 8 * i + j) <= triggeradder(32 + 8 * i + j) + triggeradder(8 * i + j);--95..64
+					triggeradder(64 + 8 * i + j) <= std_logic_vector(unsigned(triggeradder(32 + 8 * i + j)) + unsigned(triggeradder(8 * i + j)));--95..64
 				end if;
 			end process;
 		end generate;
@@ -160,7 +159,7 @@ begin
 
 	g3a : for i in 0 to 1 generate  -- count numberOfChannels
 		g3ba : for j in 0 to 7 generate -- count paralell trigger
-			triggeradder(96 + 8 * i + j) <= triggeradder(64 + 8 * i + j) + triggeradder(80 + 8 * i + j);--111..96
+			triggeradder(96 + 8 * i + j) <= std_logic_vector(unsigned(triggeradder(64 + 8 * i + j)) + unsigned(triggeradder(80 + 8 * i + j)));--111..96
 		end generate;
 	end generate;
 
@@ -168,7 +167,7 @@ begin
 		process (registerWrite.clock)
 		begin
 			if rising_edge(registerWrite.clock) then
-				triggeradder(112 + j) <= triggeradder(96 + j) + triggeradder(104 + j);--119..112
+				triggeradder(112 + j) <= std_logic_vector(unsigned(triggeradder(96 + j)) + unsigned(triggeradder(104 + j)));--119..112
 				if triggeradder(112 + j) > registerWrite.triggerSum then
 					triggerSerdesNotDelayed(j) <= '1';
 				else
@@ -298,7 +297,7 @@ begin
 						counter_trig <= x"00";
 						triggersec   <= '1';
 					else
-						counter_trig <= counter_trig + x"01";
+						counter_trig <= std_logic_vector(unsigned(counter_trig) + x"01");
 						triggersec   <= '0';
 					end if;
 				else
