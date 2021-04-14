@@ -51,5 +51,10 @@
 			<type>2</type>
 			<location>/opt/Xilinx/14.7/ISE_DS/ISE/vhdl/src/unisims</location>
 		</link>
+		<link>
+			<name>Common Libraries/vunit_lib</name>
+			<type>2</type>
+			<location>/usr/lib/python3.9/site-packages/vunit/vhdl</location>
+		</link>
 	</linkedResources>
 </projectDescription>
