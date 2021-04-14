@@ -21,7 +21,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.NUMERIC_STD.all;
 use work.types.all;
-use work.lutAdder.all;
+use work.popcnt.all;
 library UNISIM;
 use UNISIM.vcomponents.all;
 
@@ -432,7 +432,7 @@ begin
 					newDrs4CascadingEvent <= '1';
 				end if;
 
-				chargeandbaseline := (lutAdder6((writeDrs4ChargeToFifo_bit and wr(0))
+				chargeandbaseline := (popcnt6((writeDrs4ChargeToFifo_bit and wr(0))
 					& (writeDrs4ChargeToFifo_bit and wr(1))
 					& (writeDrs4ChargeToFifo_bit and wr(2))
 					& (writeDrs4BaselineToFifo_bit and wr(0))
@@ -445,7 +445,7 @@ begin
 							state1 <= waitForRoiData;
 
 							tempLength := to_unsigned(HEADER_LENGTH, tempLength'length)
-								+ lutAdder4(writeDebugToFifo_bit
+								+ popcnt4(writeDebugToFifo_bit
 								& writeTriggerTimingToFifo_bit
 								& writeDrs4CascadingToFifo_bit
 								& writeDrs4TimingToFifo_bit)
