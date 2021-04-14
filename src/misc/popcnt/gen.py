@@ -33,12 +33,11 @@ function_header = '''
 	function popcnt{inbits}(inputVector : std_logic_vector) return unsigned is
 		variable sum : unsigned({outbitsm1} downto 0);
 	begin
-		with inputVector(0 to {inbitsm1}) select
 		sum :=
 '''
 
-lut_line = '\t\t\t"{o}" when "{i}",'
-lut_last = '\t\t\t"{o}" when others;'
+lut_line = '\t\t\t"{o}" when (inputVector(0 to {inbitsm1}) = "{i}") else'
+lut_last = '\t\t\t"{o}";'
 
 function_end = '''
 		return sum;
@@ -66,6 +65,7 @@ with open('popcnt.gen.vhd', 'w') as file:
             o = bin(i.count('1'))[2:].zfill(outbits)
             print(lut_line.format_map({
                 'i': i,
+                'inbitsm1': inbits - 1,
                 'o': o,
             }), file=file)
         print(lut_last.format_map({
