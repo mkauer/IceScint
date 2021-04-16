@@ -32,9 +32,9 @@ entity internalTiming is
 		clockRate_kHz : integer -- := 118750
 	);
 	port (
-		internalTiming : out internalTiming_t;
-		registerRead   : out internalTiming_registerRead_t;
-		registerWrite  : in internalTiming_registerWrite_t
+		clock_enables : out internalTiming_t;
+		registerRead  : out internalTiming_registerRead_t;
+		registerWrite : in internalTiming_registerWrite_t
 	);
 end internalTiming;
 
@@ -50,10 +50,10 @@ architecture behavioral of internalTiming is
 
 begin
 
-	internalTiming.realTimeCounter <= std_logic_vector(realTimeCounter);
-	internalTiming.tick_ms         <= tick_ms;
-	internalTiming.tick_sec        <= tick_sec;
-	internalTiming.tick_min        <= tick_min;
+	clock_enables.realTimeCounter <= std_logic_vector(realTimeCounter);
+	clock_enables.tick_ms         <= tick_ms;
+	clock_enables.tick_sec        <= tick_sec;
+	clock_enables.tick_min        <= tick_min;
 
 	P0 : process (registerWrite.clock)
 	begin
