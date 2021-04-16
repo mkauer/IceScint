@@ -9,10 +9,6 @@ library UNISIM;
 use UNISIM.VComponents.all;
 
 entity drs4adc is
-	generic (
-		drs4_type           : string := "INVALID";
-		dummyImplementation : string := "FALSE"
-	);
 	port (
 		address : out std_logic_vector(3 downto 0);
 
@@ -88,7 +84,7 @@ begin
 
 	--h0: for i in 0 to 3 generate k: OBUF port map(O => address_p(i), I => address(i)); end generate;
 
-	y0 : entity work.drs4 --generic map(dummyImplementation => dummyImplementation);
+	y0 : entity work.drs4
 		port map(
 			address, notReset0, denable0, dwrite0, rsrload0, miso0, mosi0, srclk0, dtap0, plllck0,
 			deadTime, trigger, internalTiming, adcClocks, drs4_to_ltm9007_14, drs4_to_eventFifoSystem, drs4_0r, drs4_0w);
