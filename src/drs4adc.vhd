@@ -85,9 +85,27 @@ begin
 	--h0: for i in 0 to 3 generate k: OBUF port map(O => address_p(i), I => address(i)); end generate;
 
 	y0 : entity work.drs4
-		port map(
-			address, notReset0, denable0, dwrite0, rsrload0, miso0, mosi0, srclk0, dtap0, plllck0,
-			deadTime, trigger, internalTiming, adcClocks, drs4_to_ltm9007_14, drs4_to_eventFifoSystem, drs4_0r, drs4_0w);
+	port map(
+		address                 => address,
+		notReset                => notReset0,
+		denable                 => denable0,
+		dwrite                  => dwrite0,
+		rsrload                 => rsrload0,
+		miso                    => miso0,
+		mosi                    => mosi0,
+		srclk                   => srclk0,
+		dtap                    => dtap0,
+		plllck                  => plllck0,
+		deadTime                => deadTime,
+		trigger                 => trigger,
+		internalTiming          => internalTiming,
+		adcClocks               => adcClocks,
+		drs4_to_ltm9007_14      => drs4_to_ltm9007_14,
+		drs4_to_eventFifoSystem => drs4_to_eventFifoSystem,
+		registerRead            => drs4_0r,
+		registerWrite           => drs4_0w
+	);
+
 
 	--g1: if drs4_type = "ICE_SCINT" generate
 
@@ -104,19 +122,37 @@ begin
 		registerWrite.bitslipStart(1) when ChannelID = "01" else
 		registerWrite.bitslipStart(2);
 	y1 : entity work.ltm9007_14_slowControl port map(
-		registerWrite.clock, registerWrite.reset,
-		nCSA0, nCSB0, mosi, sclk,
-		registerWrite.init, bitslipDone_TPTHRU_TIG, bitslipStart, bitslipStartExtern,
-		LTM9007_14_BITSLIPPATTERN, registerWrite.testMode, registerWrite.testPattern);
+		clock              => registerWrite.clock,
+		reset              => registerWrite.reset,
+		nCSA               => nCSA0,
+		nCSB               => nCSB0,
+		mosi               => mosi,
+		sclk               => sclk,
+		init               => registerWrite.init,
+		bitslipDone        => bitslipDone_TPTHRU_TIG,
+		bitslipStart_p     => bitslipStart,
+		bitslipStartExtern => bitslipStartExtern,
+		bitslipPattern     => LTM9007_14_BITSLIPPATTERN,
+		testMode           => registerWrite.testMode,
+		testPattern        => registerWrite.testPattern
+	);
 
 	y2 : entity work.ltm9007_14_adcData port map(
-		enc0, adcDataA_p0, adcDataA_n0,
-		bitslipStart_TPTHRU_TIG, bitslipDone,
-		ChannelID,
-		fifoemptyout,
-		fifoemptyinA,
-		fifoemptyinB,
-		drs4_to_ltm9007_14, ltm9007_14_to_eventFifoSystem, adcClocks, registerRead, registerWrite);
+		enc_p                         => enc0,
+		adcDataA_p                    => adcDataA_p0,
+		adcDataA_n                    => adcDataA_n0,
+		bitslipStartLatched           => bitslipStart_TPTHRU_TIG,
+		bitslipDone_TIG               => bitslipDone,
+		ChannelID                     => ChannelID,
+		fifoemptyout                  => fifoemptyout,
+		fifoemptyinA                  => fifoemptyinA,
+		fifoemptyinB                  => fifoemptyinB,
+		drs4_to_ltm9007_14            => drs4_to_ltm9007_14,
+		ltm9007_14_to_eventFifoSystem => ltm9007_14_to_eventFifoSystem,
+		adcClocks                     => adcClocks,
+		registerRead                  => registerRead,
+		registerWrite                 => registerWrite
+	);
 
 	--end generate; 
 end Behavioral;
