@@ -1,3 +1,13 @@
+ghdl_test/
+test/
+*.gen.vhd
+# iSim
+isim/
+fuse.log
+fuse.xmsgs
+fuseRelaunch.cmd
+xilinxsim.ini
+
 # --- GITIGNORE FROM GITHUB ---
 # intermediate build files
 *.bgn
