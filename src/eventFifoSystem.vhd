@@ -9,6 +9,8 @@
 -- Target Devices: 
 -- Tool versions: 
 -- Description: 
+--   Wire various data structures to large 9x16bit wide FIFO
+--
 --
 -- Dependencies: 
 --
@@ -78,7 +80,30 @@ architecture behavioral of eventFifoSystem is
 	signal eventFifoWordsDma32      : std_logic_vector(31 downto 0) := (others => '0');
 	signal s                        : integer range 0 to 63         := 0;
 
-	type state1_t is (wait0, idle, writeMisc, writeGps, writeWhiteRabbit, writePixelRateCounter0, writePixelRateCounter1, writePixelRateCounter2, writeHeader, writeDebug, writeTriggerTiming, writeDrs4Sampling, writeDrs4Charge, writeDrs4Max, writeDrs4Baseline, writeDrs4Timing, testDataHeader, testData, waitForRoiData, writeDrs4Cascading);
+	type state1_t is (
+		wait0,
+		idle,                   -- wait for event
+		-- single block entries
+		writeMisc,              -- version info, device id -> idle
+		writeGps,               -- GPS time + RTC counter -> idle
+		writeWhiteRabbit,       -- WR  time + RTC counter -> idle
+		waitForRoiData,         -- wait for ROI ready -> writeHeader
+		-- data packet (multiple blocks)
+		writeHeader,            -- write header (length, RTC counter, ROI) -> writeDebug
+		writeDebug,             -- fifo error counters -> writeTriggerTiming
+		writeTriggerTiming,     -- ?? -> writeDrs4Sampling
+		writeDrs4Sampling,      -- 
+		writePixelRateCounter0, -- 
+		writePixelRateCounter1,
+		writePixelRateCounter2,
+		writeDrs4Charge,
+		writeDrs4Max,
+		writeDrs4Baseline,
+		writeDrs4Timing,
+		testDataHeader,
+		testData,
+		writeDrs4Cascading
+	);
 	signal state1 : state1_t := idle;
 
 	type state7_t is (wait0, wait1, idle, read0, read1, read2, read3);
