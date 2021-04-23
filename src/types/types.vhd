@@ -16,6 +16,8 @@ package types is
 	attribute keep       : string;
 	attribute DONT_TOUCH : string;
 
+	type u8_array_t is array (natural range <>) of unsigned(7 downto 0);
+
 	constant numberOfChannels : integer := numberOfChannels_platformSpecific;
 	--constant numberOfChannels : integer := 8, 24 or may be 16;
 	constant globalClockRate_Hz  : integer := globalClockRate_platformSpecific_hz;

@@ -32,12 +32,12 @@ entity iceTad is
 		numberOfUarts : integer := 8
 	);
 	port (
-		nP24VOn           : out std_logic_vector(7 downto 0);
-		nP24VOnTristate   : out std_logic_vector(7 downto 0);
-		rs485In           : in std_logic_vector(7 downto 0);
-		rs485Out          : out std_logic_vector(7 downto 0);
-		rs485DataTristate : out std_logic_vector(7 downto 0);
-		rs485DataEnable   : out std_logic_vector(7 downto 0);
+		nP24VOn           : out std_logic_vector(0 to 7);
+		nP24VOnTristate   : out std_logic_vector(0 to 7);
+		rs485In           : in  std_logic_vector(0 to 7);
+		rs485Out          : out std_logic_vector(0 to 7);
+		rs485DataTristate : out std_logic_vector(0 to 7);
+		rs485DataEnable   : out std_logic_vector(0 to 7);
 		registerRead      : out iceTad_registerRead_t;
 		registerWrite     : in iceTad_registerWrite_t
 	);
