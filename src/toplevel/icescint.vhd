@@ -38,8 +38,8 @@ entity icescint is
 		i_radio_drs4_srout    : in std_logic_vector(0 to NUM_RADIO - 1); -- SPI interface
 		o_radio_drs4_srin     : out std_logic;
 		o_radio_drs4_srclk    : out std_logic;
-		i_radio_adc_data_p    : in u8_array_t(0 to NUM_RADIO - 1); -- ADC SERDES data TODO: move differential receivers to toplevel
-		i_radio_adc_data_n    : in u8_array_t(0 to NUM_RADIO - 1);
+		i_radio_adc_data_p    : in slv8_array_t(0 to NUM_RADIO - 1); -- ADC SERDES data TODO: move differential receivers to toplevel
+		i_radio_adc_data_n    : in slv8_array_t(0 to NUM_RADIO - 1);
 		o_radio_adc_csan      : out std_logic;
 		o_radio_adc_csbn      : out std_logic;
 		o_radio_adc_sdi       : out std_logic;

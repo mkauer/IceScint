@@ -173,8 +173,8 @@ architecture behaviour of icescint_io is
 	signal radio_drs4_srout    : std_logic_vector(0 to 2);
 	signal radio_drs4_srin     : std_logic;
 	signal radio_drs4_srclk    : std_logic;
-	signal radio_adc_data_p    : u8_array_t(0 to 2);
-	signal radio_adc_data_n    : u8_array_t(0 to 2);
+	signal radio_adc_data_p    : slv8_array_t(0 to 2);
+	signal radio_adc_data_n    : slv8_array_t(0 to 2);
 	signal radio_adc_csan      : std_logic;
 	signal radio_adc_csbn      : std_logic;
 	signal radio_adc_sdi       : std_logic;
@@ -185,6 +185,7 @@ architecture behaviour of icescint_io is
 	signal radio_dac_sck       : std_logic;
 	signal radio_power24n      : std_logic;
 
+	signal ebi_address  : std_logic_vector(23 downto 0);
 	signal ebi_data_in  : std_logic_vector(15 downto 0);
 	signal ebi_data_out : std_logic_vector(15 downto 0);
 	signal ebi_read  : std_logic;
@@ -243,8 +244,7 @@ begin
 		);
 
 		-- remap 1-3 to 0-2
-		I_DRS4_DTAP(i) <= radio_drs4_dtap(i - 1);
-
+		radio_drs4_dtap(i - 1) <= I_DRS4_DTAP(i);
 		radio_drs4_plllock(i - 1) <= I_DRS4_PLLLCK(i);
 		radio_drs4_srout(i - 1) <= I_DRS4_SROUT(i);
 
@@ -286,6 +286,7 @@ begin
 	ebi_read   <= not I_EBI1_NRD;
 	ebi_write  <= not I_EBI1_NWE;
 	ebi_select <= not I_EBI1_NCS2;
+	ebi_address <= "000" & I_EBI1_ADDR;
 	O_EBI1_NWAIT <= '1';
 	gen_ebi_data : for i in 0 to 15 generate
 		iobuf_inst : IOBUF generic map(
@@ -313,7 +314,7 @@ begin
 	end generate;
 
 	-- GROUND
-	O_NOT_USED_GND <= (others => 0);
+	O_NOT_USED_GND <= (others => '0');
 	
 	-- WHITE RABBIT
 	ibufds_wr_clk : IBUFDS generic map(DIFF_TERM => true) port map(
@@ -451,7 +452,7 @@ begin
 		i_ebi_select   => ebi_select,
 		i_ebi_write    => ebi_write,
 		i_ebi_read     => ebi_read,
-		i_ebi_address  => "000" & I_EBI1_ADDR,
+		i_ebi_address  => ebi_address,
 		i_ebi_data_in  => ebi_data_in,
 		o_ebi_data_out => ebi_data_out,
 		o_ebi_irq      => O_PC1_ARM_IRQ0,
