@@ -165,10 +165,10 @@ architecture behavioral of serdesIn_1to7 is
 
 begin
 
-	rxioclk        <= adcClocks.serdesIoClock;
-	rxserdesstrobe <= adcClocks.serdesStrobe;
-	gclk           <= adcClocks.serdesDivClock;
-	reset          <= adcClocks.serdesDivClockReset;
+	rxioclk        <= adcClocks.clk_462_serdes_io;
+	rxserdesstrobe <= adcClocks.serdes_strobe_462;
+	gclk           <= adcClocks.clk_66_serdes_div7;
+	reset          <= adcClocks.rst_div7;
 	--reset <= adcClocks.asyncReset;
 
 	dataOut <= data_out;

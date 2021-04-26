@@ -108,10 +108,10 @@ package types is
 	--	end record;
 
 	type triggerSerdesClocks_t is record
-		serdesDivClockReset : std_logic;
-		serdesDivClock      : std_logic;
-		serdesIoClock       : std_logic;
-		serdesStrobe        : std_logic;
+		rst_div8 : std_logic;
+		clk_118_serdes_div8      : std_logic;
+		clk_950_serdes_io       : std_logic;
+		serdes_strobe_950        : std_logic;
 		asyncReset          : std_logic; -- ## remove
 	end record;
 	-------------------------------------------------------------------------------
@@ -549,12 +549,12 @@ package types is
 	end record;
 
 	type adcClocks_t is record
-		serdesIoClock            : std_logic;
-		serdesStrobe             : std_logic;
-		serdesDivClock           : std_logic;
-		serdesDivClockPhase      : std_logic;
-		serdesDivClockReset      : std_logic;
-		serdesDivClockPhaseReset : std_logic;
+		clk_462_serdes_io            : std_logic;
+		serdes_strobe_462             : std_logic;
+		clk_66_serdes_div7           : std_logic;
+		clk_66_serdes_div7_second      : std_logic;
+		rst_div7      : std_logic;
+		rst_div7_second : std_logic;
 	end record;
 	type adcFifo_t is record
 		fifoOutA   : std_logic_vector(55 downto 0);

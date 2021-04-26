@@ -274,14 +274,14 @@ begin
     end process P0;
 
     --P01:process (registerWrite.globals.adcSerdesDivClockPhase.clock) -- ~66MHz
-    P01 : process (adcClocks.serdesDivClockPhase) -- ~66MHz
+    P01 : process (adcClocks.clk_66_serdes_div7_second) -- ~66MHz
     begin
         --if rising_edge(registerWrite.globals.adcSerdesDivClockPhase.clock) then
-        if rising_edge(adcClocks.serdesDivClockPhase) then
+        if rising_edge(adcClocks.clk_66_serdes_div7_second) then
             roiBufferReady_66 <= '0'; -- autoreset
             srclk2            <= '0'; -- autoreset
             rsrload2          <= '0'; -- autoreset
-            if (adcClocks.serdesDivClockPhaseReset = '1') then
+            if (adcClocks.rst_div7_second = '1') then
                 --sclkPhase <= not(sclkDefaultLevel);
                 sclkPhase                          <= sclkDefaultLevel;
                 sendFullReadoutSync_66             <= (others => '0');

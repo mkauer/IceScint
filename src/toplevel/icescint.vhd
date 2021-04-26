@@ -186,8 +186,8 @@ begin
 		addressAsync         => i_ebi_address,
 		controlRead          => i_ebi_read,
 		controlWrite         => i_ebi_write,
-		reset                => triggerSerdesClocks.serdesDivClockReset,
-		busClock             => triggerSerdesClocks.serdesDivClock,
+		reset                => triggerSerdesClocks.rst_div8,
+		busClock             => triggerSerdesClocks.clk_118_serdes_div8,
 		addressAndControlBus => addressAndControlBus
 	);
 
@@ -501,7 +501,7 @@ begin
 
 
 	Inst_I2CModule : entity work.I2CModule port map(
-		clk           => triggerSerdesClocks.serdesDivClock,
+		clk           => triggerSerdesClocks.clk_118_serdes_div8,
 		scl           => o_scl,
 		sdaout        => o_sda_out,
 		sdaint        => i_sda_in,

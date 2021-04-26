@@ -294,7 +294,7 @@ begin
 
 	x108 : entity work.drs4FrontEndFifo port map(
 		rst           => fifoReset_sync,            -- 66 ??
-		wr_clk        => adcClocks.serdesDivClock,  -- 66 ok --serdesDivClockA,
+		wr_clk        => adcClocks.clk_66_serdes_div7,  -- 66 ok --serdesDivClockA,
 		rd_clk        => fifoReadClock,             -- 125 ok
 		din           => dataOutGroupA_buffer,      -- 66 ok
 		wr_en         => fifoWriteEnableA,          -- 66 ok
@@ -310,7 +310,7 @@ begin
 		);
 	x109 : entity work.drs4FrontEndFifo port map(
 		rst           => fifoReset_sync,
-		wr_clk        => adcClocks.serdesDivClock, --serdesDivClockB,
+		wr_clk        => adcClocks.clk_66_serdes_div7, --serdesDivClockB,
 		rd_clk        => fifoReadClock,
 		din           => dataOutGroupB_buffer,
 		wr_en         => fifoWriteEnableB,
@@ -374,12 +374,12 @@ begin
 		end if;
 	end process P02;
 
-	P9 : process (adcClocks.serdesDivClock) -- ~66 MHz
+	P9 : process (adcClocks.clk_66_serdes_div7) -- ~66 MHz
 	begin
-		if rising_edge(adcClocks.serdesDivClock) then
+		if rising_edge(adcClocks.clk_66_serdes_div7) then
 			adcDataValid <= '0'; -- autoreset
 			--if (registerWrite.reset = '1') then -- ## sync?!
-			if (adcClocks.serdesDivClockReset = '1') then
+			if (adcClocks.rst_div7 = '1') then
 				stateAdcFifoData      <= idle;
 				adcDataStart_old      <= '0';
 				numberOfSamplesToRead <= (others => '0');
@@ -427,15 +427,15 @@ begin
 		end if;
 	end process P9;
 
-	P10 : process (adcClocks.serdesDivClock) -- ~66 MHz
+	P10 : process (adcClocks.clk_66_serdes_div7) -- ~66 MHz
 	begin
-		if rising_edge(adcClocks.serdesDivClock) then
+		if rising_edge(adcClocks.clk_66_serdes_div7) then
 			fifoWriteEnableA <= '0'; -- autoreset
 			fifoWriteEnableB <= '0'; -- autoreset
 			fifoReset        <= '0'; -- autoreset
 			--fifoResetB <= '0'; -- autoreset
 			--if (registerWrite.reset = '1') then -- ## sync?!
-			if (adcClocks.serdesDivClockReset = '1') then
+			if (adcClocks.rst_div7 = '1') then
 				stateAdcFifo <= sync1;
 			else
 				case stateAdcFifo is
@@ -640,10 +640,10 @@ begin
 			end if;
 		end if;
 	end process P4;
-	P5 : process (adcClocks.serdesDivClock) -- 66MHz
+	P5 : process (adcClocks.clk_66_serdes_div7) -- 66MHz
 	begin
-		if rising_edge(adcClocks.serdesDivClock) then
-			if (adcClocks.serdesDivClockReset = '1') then -- ## sync?!
+		if rising_edge(adcClocks.clk_66_serdes_div7) then
+			if (adcClocks.rst_div7 = '1') then -- ## sync?!
 				enc <= '0';
 			else
 				enc <= not(enc);
