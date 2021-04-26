@@ -285,8 +285,8 @@ begin
 	);
 
 	x14c : entity work.whiteRabbitTiming port map(
-		whiteRabbitPps    => i_wr_pps,
-		whiteRabbitClock  => i_wr_clock,
+		i_wr_pps    => i_wr_pps,
+		i_wr_clock  => i_wr_clock,
 		internalTiming    => internalTiming,
 		whiteRabbitTiming => whiteRabbitTiming,
 		registerRead      => whiteRabbitTiming_0r,

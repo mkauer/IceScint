@@ -32,8 +32,8 @@ entity whiteRabbitTiming is
 	--		clockRate_Hz : integer := 0 
 	--	);
 	port (
-		whiteRabbitPps    : in std_logic;
-		whiteRabbitClock  : in std_logic;
+		i_wr_pps    : in std_logic;
+		i_wr_clock  : in std_logic;
 		internalTiming    : in internalTiming_t;
 		whiteRabbitTiming : out whiteRabbitTiming_t;
 		registerRead      : out whiteRabbitTiming_registerRead_t;
@@ -137,10 +137,10 @@ begin
 				counter1               <= (others => '0');
 				newDataLatched         <= '0';
 			else
-				ppsSync   <= ppsSync(ppsSync'left downto 1) & whiteRabbitPps;
-				clockSync <= clockSync(clockSync'left downto 1) & whiteRabbitClock;
+				ppsSync   <= ppsSync(ppsSync'left downto 1) & i_wr_pps;
+				clockSync <= clockSync(clockSync'left downto 1) & i_wr_clock;
 
-				pps <= whiteRabbitPps;
+				pps <= i_wr_pps;
 				--pps <= ppsSync(ppsSync'left);
 
 				newDataLatched <= newDataLatched and not(newDataLatchedReset);
