@@ -88,6 +88,11 @@ architecture Behavioral of triggerLogic is
 	signal sumTriggerSameEvent : std_logic                     := '0';
 	signal sameEventCounter    : unsigned(11 downto 0)         := (others => '0');
 	signal sameEventTime       : std_logic_vector(11 downto 0) := (others => '0');
+	-- trigger adder - population count of trigger input after SERDES decoder
+	-- 0   - 63: 8 (channels) x 8 (deserialized) raw (masked) inputs, no registers
+	-- 64  - 95: two channels summed, registers
+	-- 96  - 111: four channels summed, no registers
+	-- 112 - 119: eight channels summed, registers
 	type Triggeradd is array (0 to 119) of std_logic_vector(3 downto 0);
 	signal triggeradder : Triggeradd;
 	signal triggersec   : std_logic                    := '0';
@@ -138,8 +143,6 @@ begin
 		x"00";
 	end generate;
 
-	--	triggerSerdesNotDelayed <= triggerMasked(0) or triggerMasked(1) or triggerMasked(2) or triggerMasked(3) or triggerMasked(4) or triggerMasked(5) or triggerMasked(6) or triggerMasked(7); -- vector of time slots ## ?!?!
-
 	g1a : for i in 0 to 7 generate                            -- count numberOfChannels
 		g1b : for j in 0 to 7 generate                            -- count paralell trigger
 			triggeradder(8 * i + j) <= ("000" & triggerMasked(i)(j)); -- 63..0
@@ -177,9 +180,16 @@ begin
 		end process;
 	end generate;
 
-	--	triggerSerdesNotDelayed <= triggerMasked(0) or triggerMasked(1) or triggerMasked(2) or triggerMasked(3) or triggerMasked(4) or triggerMasked(5) or triggerMasked(6) or triggerMasked(7); -- vector of time slots ## ?!?!
-
-	e0 : entity work.triggerLogicDelayFifo port map(registerWrite.clock, fifoClear, triggerSerdesNotDelayed, fifoWrite, fifoRead, triggerSerdesDelayed, open, open);
+	e0 : entity work.triggerLogicDelayFifo port map(
+		clk   => registerWrite.clock,
+		srst  => fifoClear,
+		din   => triggerSerdesNotDelayed,
+		wr_en => fifoWrite,
+		rd_en => fifoRead,
+		dout  => triggerSerdesDelayed,
+		full  => open,
+		empty => open
+	);
 
 	process (registerWrite.clock)
 	begin
