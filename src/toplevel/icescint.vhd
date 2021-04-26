@@ -173,8 +173,8 @@ architecture behaviour of icescint is
 
 begin
 	x0 : entity work.clockConfig port map(
-		clockPin            => i_clk_10m,
-		asyncReset          => i_rst_ext,
+		i_clk_10m_ext       => i_clk_10m,
+		i_rst_ext          => i_rst_ext,
 		triggerSerdesClocks => triggerSerdesClocks,
 		adcClocks           => adcClocks,
 		debug               => clockConfig_debug,
