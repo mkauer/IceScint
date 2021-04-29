@@ -92,17 +92,17 @@ architecture behavioral of eventFifoSystem is
 		writeHeader,            -- write header (length, RTC counter, ROI) -> writeDebug
 		writeDebug,             -- fifo error counters -> writeTriggerTiming
 		writeTriggerTiming,     -- ?? -> writeDrs4Sampling
-		writeDrs4Sampling,      -- 
+		writeDrs4Sampling,      -- ?? 3 blocks (masked by "wr") -> writeDrs4Baseline
+		writeDrs4Baseline,      -- ?? 3 blocks (masked by "wr") * 8 channels * 24 bit  -> writeDrs4Charge
+		writeDrs4Charge,        -- ?? 3 blocks (masked by "wr") * 8 channels * 24 bit  -> writeDrs4Timing
+		writeDrs4Timing,        -- does nothing, not implemented ?!?! -> writeDrs4Cascading
+		writeDrs4Cascading,     -- cascadingdata + ROI -> idle
 		writePixelRateCounter0, -- 
 		writePixelRateCounter1,
 		writePixelRateCounter2,
-		writeDrs4Charge,
 		writeDrs4Max,
-		writeDrs4Baseline,
-		writeDrs4Timing,
 		testDataHeader,
-		testData,
-		writeDrs4Cascading
+		testData
 	);
 	signal state1 : state1_t := idle;
 
