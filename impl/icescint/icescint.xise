@@ -163,6 +163,9 @@
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="127"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="36"/>
     </file>
+    <file xil_pn:name="../../ucf/taxi.ucf" xil_pn:type="FILE_UCF">
+      <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
+    </file>
     <file xil_pn:name="../../ip/delayfifo/delayFifo.xise" xil_pn:type="FILE_COREGENISE">
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
