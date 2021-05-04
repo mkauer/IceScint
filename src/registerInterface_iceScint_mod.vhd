@@ -517,10 +517,10 @@ begin
 						when x"0002" => readDataBuffer <= registerB;
 						when x"0004" => readDataBuffer <= x"5555";-- test
 						when x"0006" => readDataBuffer <= x"aaaa";-- test
-						when x"0008" => readDataBuffer <= x"2020";-- jahr
+						when x"0008" => readDataBuffer <= x"2021";-- jahr
 						when x"000a" => readDataBuffer <= x"0005";-- monat
-						when x"000c" => readDataBuffer <= x"0028";-- tag 
-						when x"000e" => readDataBuffer <= x"0216";-- version
+						when x"000c" => readDataBuffer <= x"0004";-- tag 
+						when x"000e" => readDataBuffer <= x"0300";-- version
 						when x"0010" => readDataBuffer <= x"00" & modus;--modusregister read&write
 						when x"0012" => readDataBuffer <= (not dummycnt) & dummycnt;
 							inccnt                         <= not controlBus.address(0) xor modus(0);
@@ -799,35 +799,6 @@ begin
 			ltm9007_14_0r.offsetCorrectionRamData(6) when ltm9007_14_0r.offsetCorrectionRamWrite(6) = '1' else
 			ltm9007_14_0r.offsetCorrectionRamData(7) when ltm9007_14_0r.offsetCorrectionRamWrite(7) = '1' else
 			x"d00f";
-
-		--	P1:process (controlBus.clock)
-		--	begin
-		--		if rising_edge(controlBus.clock) then
-		--			if (controlBus.reset = '1') then
-		--				actualOffsetCorrectionRamValue <= x"8000";
-		--			else
-		--				if(ltm9007_14_0r.offsetCorrectionRamWrite(0) = '1') then
-		--					actualOffsetCorrectionRamValue <= x"00" & ltm9007_14_0r.offsetCorrectionRamData(0);
-		--				elsif(ltm9007_14_0r.offsetCorrectionRamWrite(1) = '1') then
-		--					actualOffsetCorrectionRamValue <= x"00" & ltm9007_14_0r.offsetCorrectionRamData(1);
-		--				elsif(ltm9007_14_0r.offsetCorrectionRamWrite(2) = '1') then
-		--					actualOffsetCorrectionRamValue <= x"00" & ltm9007_14_0r.offsetCorrectionRamData(2);
-		--				elsif(ltm9007_14_0r.offsetCorrectionRamWrite(3) = '1') then
-		--					actualOffsetCorrectionRamValue <= x"00" & ltm9007_14_0r.offsetCorrectionRamData(3);
-		--				elsif(ltm9007_14_0r.offsetCorrectionRamWrite(4) = '1') then
-		--					actualOffsetCorrectionRamValue <= x"00" & ltm9007_14_0r.offsetCorrectionRamData(4);
-		--				elsif(ltm9007_14_0r.offsetCorrectionRamWrite(5) = '1') then
-		--					actualOffsetCorrectionRamValue <= x"00" & ltm9007_14_0r.offsetCorrectionRamData(5);
-		--				elsif(ltm9007_14_0r.offsetCorrectionRamWrite(6) = '1') then
-		--					actualOffsetCorrectionRamValue <= x"00" & ltm9007_14_0r.offsetCorrectionRamData(6);
-		--				elsif(ltm9007_14_0r.offsetCorrectionRamWrite(7) = '1') then
-		--					actualOffsetCorrectionRamValue <= x"00" & ltm9007_14_0r.offsetCorrectionRamData(7);
-		--				else
-		--					actualOffsetCorrectionRamValue <= x"8000";
-		--				end if;
-		--			end if;
-		--		end if;
-		--	end process P1;
 
 	end generate g0;
 end behavior;

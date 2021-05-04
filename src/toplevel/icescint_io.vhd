@@ -422,7 +422,7 @@ begin
 	----------------------------------------------------------------------------
 
 	icescint_inst : entity work.icescint port map (
-		i_clk_10m => I_QOSC2_OUT,
+		i_clk_10m => wr_clock,
 		i_rst_ext => "not"(I_PON_RESETn),
 
 		o_radio_drs4_resetn   => radio_drs4_resetn,

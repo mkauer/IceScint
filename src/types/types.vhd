@@ -124,19 +124,6 @@ package types is
 
 	-------------------------------------------------------------------------------
 
-	--	type clock_t is record
-	--		clock : std_logic;
-	--		reset : std_logic;
-	--	end record;
-	--	type globals_t is record
-	--		discriminatorSerdesDivClock : clock_t;
-	--		adcSerdesDivClock : clock_t;
-	--		adcSerdesDivClockPhase : clock_t;
-	--		drs4RefClock : std_logic;
-	--	end record;
-
-	-------------------------------------------------------------------------------
-
 	type eventFifoSystem_registerRead_t is record
 		dmaBuffer                 : std_logic_vector(15 downto 0);
 		eventFifoWordsDma         : std_logic_vector(15 downto 0);
