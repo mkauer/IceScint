@@ -1,0 +1,3 @@
+[submodule "lib/irig-decoder"]
+	path = lib/irig-decoder
+	url = https://github.com/jkelley/irig-decoder.git
