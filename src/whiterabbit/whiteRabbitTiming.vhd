@@ -28,9 +28,9 @@ use work.types.all;
 --use UNISIM.VComponents.all;
 
 entity whiteRabbitTiming is
-	--	generic(
-	--		clockRate_Hz : integer := 0 
-	--	);
+		generic(
+			G_CLOCK_PERIOD : time := 100 ns 
+		);
 	port (
 		i_wr_pps    : in std_logic;
 		i_wr_clock  : in std_logic;
@@ -70,12 +70,11 @@ architecture behavioral of whiteRabbitTiming is
 	signal bitCounterLatched : integer range 0 to 255         := 0;
 	signal ppsCounter        : integer range 0 to 2 ** 22 - 1 := 0;
 
-	-- all for 118.75MHz
 	-- invalid \ 2ms \ 5ms \ 8ms \ invalid
-	constant IDENTIFIER_MAX : integer := 1128125; -- 8ms+1.5ms 
-	constant IDENTIFIER_MIN : integer := 771875;  -- 5ms+1.5ms
-	constant ONE_MIN        : integer := 415625;  -- 2ms+1.5ms
-	constant ZERO_MIN       : integer := 59375;   -- 2ms-1.5ms
+	constant IDENTIFIER_MAX : integer := (8 ms + 1.5 ms) / G_CLOCK_PERIOD; -- 8ms+1.5ms 
+	constant IDENTIFIER_MIN : integer := (5 ms + 1.5 ms) / G_CLOCK_PERIOD;  -- 5ms+1.5ms
+	constant ONE_MIN        : integer := (2 ms + 1.5 ms) / G_CLOCK_PERIOD;  -- 2ms+1.5ms
+	constant ZERO_MIN       : integer := (2 ms - 1.5 ms) / G_CLOCK_PERIOD;   -- 2ms-1.5ms
 
 	signal errorCounter : unsigned(15 downto 0) := (others => '0');
 	signal idCounter    : integer range 0 to 15 := 0;

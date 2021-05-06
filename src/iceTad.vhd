@@ -76,7 +76,7 @@ begin
 		rs485DataIn_intern(i) <= rs485In(i) and not(rs485DataEnable_intern(i));
 		x0 : entity work.uart_RxTx_V2
 			generic map(
-				Quarz_Taktfrequenz => 118750000,
+				Quarz_Taktfrequenz => 120000000,
 				--			Baudrate => 9600
 				Baudrate => 3000000
 				--			Baudrate => 57600

@@ -284,7 +284,9 @@ begin
 		registerWrite  => gpsTiming_0w
 	);
 
-	x14c : entity work.whiteRabbitTiming port map(
+	x14c : entity work.whiteRabbitTiming generic map (
+		G_CLOCK_PERIOD => 8.333333333 ns
+	) port map(
 		i_wr_pps    => i_wr_pps,
 		i_wr_clock  => i_wr_clock,
 		internalTiming    => internalTiming,

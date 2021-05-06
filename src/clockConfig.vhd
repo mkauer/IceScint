@@ -41,7 +41,7 @@ end clockConfig;
 architecture Behavioral of clockConfig is
 
 	signal clk_10m_ext_buffered : std_logic                    := '0';
-	signal dcm1_clko_25   : std_logic                    := '0';
+	signal dcm1_clko_30   : std_logic                    := '0';
 	signal dcm1_locked       : std_logic                    := '0';
 	signal dcm1_status       : std_logic_vector(7 downto 0) := x"00";
 	signal dcm1_feedback       : std_logic                    := '0';
@@ -49,9 +49,9 @@ architecture Behavioral of clockConfig is
 	signal pll1_feedback     : std_logic                    := '0';
 	--signal pllReset1 : std_logic := '0';
 	signal pll1_locked                         : std_logic                    := '1';
-	signal pll1_clko_950       : std_logic                    := '0';
-	signal pll1_clk0_div8_118       : std_logic                    := '0';
-	signal pll1_clk0_div8_118_global : std_logic                    := '0';
+	signal pll1_clko_960       : std_logic                    := '0';
+	signal pll1_clk0_div8_120       : std_logic                    := '0';
+	signal pll1_clk0_div8_120_global : std_logic                    := '0';
 	signal dcm3_clko_30                     : std_logic                    := '0';
 	signal dcm3_locked                         : std_logic                    := '0';
 	signal dcm3_status                         : std_logic_vector(7 downto 0) := x"00";
@@ -93,7 +93,7 @@ architecture Behavioral of clockConfig is
 	signal debugSync1 : clockConfig_debug_t;
 	signal debugSync2 : clockConfig_debug_t;
 
-	signal pll1_clko_div16_59 : std_logic := '0';
+	signal pll1_clko_div16_60 : std_logic := '0';
 
 begin
 	drs4RefClock <= refClock;
@@ -116,7 +116,7 @@ begin
 	generic map(
 		CLKDV_DIVIDE       => 2.0,                  -- CLKDV divide value (1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,9,10,11,12,13,14,15,16).
 		CLKFX_DIVIDE       => 2,                    -- Divide value on CLKFX outputs - D - (1-32)
-		CLKFX_MULTIPLY     => 5,                    -- Multiply value on CLKFX outputs - M - (2-32)
+		CLKFX_MULTIPLY     => 6,                    -- Multiply value on CLKFX outputs - M - (2-32)
 		CLKIN_DIVIDE_BY_2  => FALSE,                -- CLKIN divide by two (TRUE/FALSE)
 		CLKIN_PERIOD       => 100.0,                -- Input clock period specified in nS
 		CLKOUT_PHASE_SHIFT => "NONE",               -- Output phase shift (NONE, FIXED, VARIABLE)
@@ -133,7 +133,7 @@ begin
 		CLK2X180 => open,             -- 1-bit output: 2X clock frequency, 180 degree clock output
 		CLK90    => open,             -- 1-bit output: 90 degree clock output
 		CLKDV    => open,             -- 1-bit output: Divided clock output
-		CLKFX    => dcm1_clko_25,   -- 1-bit output: Digital Frequency Synthesizer output (DFS)
+		CLKFX    => dcm1_clko_30,   -- 1-bit output: Digital Frequency Synthesizer output (DFS)
 		CLKFX180 => open,             -- 1-bit output: 180 degree CLKFX output
 		LOCKED   => dcm1_locked,       -- 1-bit output: DCM_SP Lock Output
 		PSDONE   => open,             -- 1-bit output: Phase shift done output
@@ -158,7 +158,7 @@ begin
 		CLKIN_PERIOD       => 40.000,
 		REF_JITTER         => 0.100,
 		DIVCLK_DIVIDE      => 1,
-		CLKFBOUT_MULT      => 38,
+		CLKFBOUT_MULT      => 32,
 		CLKFBOUT_PHASE     => 0.000,
 		CLKOUT0_DIVIDE     => 1,
 		CLKOUT0_PHASE      => 0.000,
@@ -181,21 +181,21 @@ begin
 	)
 	port map(
 		CLKFBOUT => pll1_feedback,
-		CLKOUT0 => pll1_clko_950,
+		CLKOUT0 => pll1_clko_960,
 		CLKOUT1 => open,
-		CLKOUT2 => pll1_clk0_div8_118,
+		CLKOUT2 => pll1_clk0_div8_120,
 		CLKOUT3 => open,
 		CLKOUT4 => open,
-		CLKOUT5 => pll1_clko_div16_59,
+		CLKOUT5 => pll1_clko_div16_60,
 		LOCKED => pll1_locked,
 		CLKFBIN => pll1_feedback,
-		CLKIN => dcm1_clko_25,
+		CLKIN => dcm1_clko_30,
 		RST => '0'
 	);
 
 	bufg_inst1 : BUFG port map(
-		O => pll1_clk0_div8_118_global,
-		I => pll1_clk0_div8_118
+		O => pll1_clk0_div8_120_global,
+		I => pll1_clk0_div8_120
 	);
 
 	bufpll_inst1 : BUFPLL
@@ -207,9 +207,9 @@ begin
 		IOCLK => triggerSerdesClocks.clk_950_serdes_io, -- Output PLL Clock
 		LOCK => pll1_locked_buf, -- BUFPLL Clock and strobe locked
 		serdesstrobe => triggerSerdesClocks.serdes_strobe_950, -- Output SERDES strobe
-		GCLK => pll1_clk0_div8_118_global, -- Global Clock input
+		GCLK => pll1_clk0_div8_120_global, -- Global Clock input
 		LOCKED => pll1_locked, -- Clock0 locked input
-		PLLIN => pll1_clko_950 -- PLL Clock input
+		PLLIN => pll1_clko_960 -- PLL Clock input
 	);
 
 	clockErrorTrigger <= '1' when ((pll1_locked = '0') or (i_rst_ext = '1')) else '0';
@@ -372,9 +372,9 @@ begin
 	end process;
 
 	-------------------------------------------------------------------------------
-	process (pll1_clk0_div8_118_global, clockErrorTrigger)
+	process (pll1_clk0_div8_120_global, clockErrorTrigger)
 	begin
-		if (rising_edge(pll1_clk0_div8_118_global)) then
+		if (rising_edge(pll1_clk0_div8_120_global)) then
 			reset_i0 <= '0' & reset_i0(reset_i0'length - 1 downto 1);
 		end if;
 		if (clockErrorTrigger = '1') then
@@ -407,12 +407,12 @@ begin
 	adcClocks.rst_div7                  <= reset_i1(0);
 	adcClocks.rst_div7_second           <= reset_i2(0);
 
-	triggerSerdesClocks.clk_118_serdes_div8 <= pll1_clk0_div8_118_global;
+	triggerSerdesClocks.clk_118_serdes_div8 <= pll1_clk0_div8_120_global;
 	triggerSerdesClocks.rst_div8            <= reset_i0(0);
 	triggerSerdesClocks.asyncReset <= clockErrorTrigger;
-	process (pll1_clko_div16_59, clockErrorTrigger)
+	process (pll1_clko_div16_60, clockErrorTrigger)
 	begin
-		if (rising_edge(pll1_clko_div16_59)) then
+		if (rising_edge(pll1_clko_div16_60)) then
 			reset_i3 <= '0' & reset_i3(reset_i3'length - 1 downto 1);
 		end if;
 		if (clockErrorTrigger = '1') then
