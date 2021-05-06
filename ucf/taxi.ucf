@@ -698,8 +698,8 @@ NET "IO_SCL" DRIVE = 4 | IOSTANDARD = LVCMOS25 | SLEW = SLOW | Pullup | Loc = L2
 #PIN "rd_clk_DPR_inst.O" CLOCK_DEDICATED_ROUTE = FALSE;
 
 
-NET "*drs4RefClockPeriod*" TPTHRU = thru_1;
-TIMESPEC TS_thru_1 = FROM FFS THRU thru_1 TO FFS TIG;
+#NET "*drs4RefClockPeriod*" TPTHRU = thru_1;
+#TIMESPEC TS_thru_1 = FROM FFS THRU thru_1 TO FFS TIG;
 #NET "x16/sendRoi*" TPTHRU = thru_2;
 #TIMESPEC TS_thru_2 = FROM FFS THRU thru_2 TO FFS TIG;
 #NET "*x16/bitCounter1*" TPTHRU = thru_3;

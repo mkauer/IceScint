@@ -352,24 +352,42 @@ begin
 		RST      => '0'               --dcm2Reset        		-- 1-bit input: Active high reset input
 	);
 
-	p3 : process (dcm2_clko_125)
-	begin
-		if (rising_edge(dcm2_clko_125)) then
-			debugSync1 <= debug;
-			debugSync2 <= debugSync1;
-			if (clockErrorAdc = '0') then
-				refClockCounter <= refClockCounter + 1;
-				--if(refClockCounter >= 127) then
-				if (refClockCounter >= unsigned(debugSync2.drs4RefClockPeriod)) then
-					refClockCounter <= x"00";
-					refClock        <= not(refClock); -- from 125MHz: refClock will be 488.28125 kHz to get 1.000GS 	
-				end if;
-			else
-				refClockCounter <= x"00";
-				refClock        <= '0';
-			end if;
-		end if;
-	end process;
+	DCM_CLKGEN_inst : DCM_CLKGEN
+	generic map(
+		CLKFX_MULTIPLY => 2,
+		CLKFX_DIVIDE => 8,
+		CLKFXDV_DIVIDE => 16,
+		SPREAD_SPECTRUM => "NONE",
+		CLKIN_PERIOD => 33.333333
+	)
+	port map(
+		CLKIN => dcm1_clko_30,
+		RST => '0',
+		FREEZEDCM => '0', -- ?
+		CLKFX => refClock,
+		PROGDATA => '0',
+		PROGEN => '0',
+		PROGCLK => '0'
+	);
+
+	-- p3 : process (dcm2_clko_125)
+	-- begin
+	-- 	if (rising_edge(dcm2_clko_125)) then
+	-- 		debugSync1 <= debug;
+	-- 		debugSync2 <= debugSync1;
+	-- 		if (clockErrorAdc = '0') then
+	-- 			refClockCounter <= refClockCounter + 1;
+	-- 			--if(refClockCounter >= 127) then
+	-- 			if (refClockCounter >= unsigned(debugSync2.drs4RefClockPeriod)) then
+	-- 				refClockCounter <= x"00";
+	-- 				-- refClock        <= not(refClock); -- from 125MHz: refClock will be 488.28125 kHz to get 1.000GS 	
+	-- 			end if;
+	-- 		else
+	-- 			refClockCounter <= x"00";
+	-- 			-- refClock        <= '0';
+	-- 		end if;
+	-- 	end if;
+	-- end process;
 
 	-------------------------------------------------------------------------------
 	process (pll1_clk0_div8_120_global, clockErrorTrigger)
