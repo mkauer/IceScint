@@ -119,8 +119,8 @@ begin
 		end if;
 	end process;
 
-	dataBusbuf <= databusin when (modus(1) = '0') else
-		(writemsbs & databusin(7 downto 0));
+	databusbuf <= dataBusIn when (modus(1) = '0') else
+		(writemsbs & dataBusIn(7 downto 0));
 
 	g0 : if moduleEnabled /= 0 generate
 		controlBus         <= smc_vectorToBus(addressAndControlBus);
@@ -204,7 +204,7 @@ begin
 				if (controlBus.reset = '1') then
 					registerA                               <= (others => '0');
 					registerb                               <= (others => '0');
-					registerC                               <= (others => '0');
+					registerc                               <= (others => '0');
 					triggerDataDelay_0w.numberOfDelayCycles <= x"0004";
 					triggerDataDelay_0w.resetDelay          <= '1';
 					triggerDataDelay_1w.numberOfDelayCycles <= x"0005";
@@ -259,202 +259,202 @@ begin
 								-- address 0x1000-0x1fff is used for icescint
 								-- address 0x2000-0x2fff is used for polarstern
 								-- address 0x3000-0x3fff is used for taxi classic (24ch. version)
-							when x"0000" => registerA <= dataBusbuf(7 downto 0);
-							when x"0002" => registerB <= dataBusbuf;
+							when x"0000" => registerA <= databusbuf(7 downto 0);
+							when x"0002" => registerb <= databusbuf;
 
-							when x"0010" => modus <= dataBusbuf(7 downto 0);
+							when x"0010" => modus <= databusbuf(7 downto 0);
 
-							when x"0020" => writemsbs <= dataBusbuf(7 downto 0);
+							when x"0020" => writemsbs <= databusbuf(7 downto 0);
 
 							when x"0102" => eventFifoClear              <= '1'; -- autoreset
-							when x"0108" => eventFifoSystem_0w.irqStall <= dataBusbuf(0);
-							when x"010a" => eventFifoSystem_0w.deviceId <= dataBusbuf;
+							when x"0108" => eventFifoSystem_0w.irqStall <= databusbuf(0);
+							when x"010a" => eventFifoSystem_0w.deviceId <= databusbuf;
 
-							when x"0200" => gpsTiming_0w.counterPeriod       <= dataBusbuf;
+							when x"0200" => gpsTiming_0w.counterPeriod       <= databusbuf;
 							when x"0202" => gpsTiming_0w.newDataLatchedReset <= '1'; -- autoreset
 
-							when x"0300" => tmp05_0w.conversionStart <= dataBusbuf(0); -- autoreset
+							when x"0300" => tmp05_0w.conversionStart <= databusbuf(0); -- autoreset
 							when others  => null;
 						end case;
 
 						case ((controlBus.address(15 downto 1) & "0") and not(subAddressMask)) is
-							when x"0310" => ad56x1_0w.valueChip0        <= dataBusbuf(11 downto 0);
+							when x"0310" => ad56x1_0w.valueChip0        <= databusbuf(11 downto 0);
 								ad56x1_0w.valueChangedChip0                 <= '1'; -- autoreset
-							when x"0312" => ad56x1_0w.valueChip1        <= dataBusbuf(11 downto 0);
+							when x"0312" => ad56x1_0w.valueChip1        <= databusbuf(11 downto 0);
 								ad56x1_0w.valueChangedChip1                 <= '1'; -- autoreset
-							when x"0314" => ad56x1_0w.valueChangedChip0 <= dataBusbuf(0);
-								ad56x1_0w.valueChangedChip1                 <= dataBusbuf(1); -- autoreset
+							when x"0314" => ad56x1_0w.valueChangedChip0 <= databusbuf(0);
+								ad56x1_0w.valueChangedChip1                 <= databusbuf(1); -- autoreset
 							when others => null;
 						end case;
 
 						case ((controlBus.address(15 downto 1) & "0") and not(subAddressMask)) is
 							when x"0400" => dac088s085_x3_0w.init               <= '1';                    -- autoreset
-							when x"0402" => dac088s085_x3_0w.valuesChangedChip0 <= dataBusbuf(7 downto 0); -- autoreset
-							when x"0404" => dac088s085_x3_0w.valuesChangedChip1 <= dataBusbuf(7 downto 0); -- autoreset
-							when x"0406" => dac088s085_x3_0w.valuesChangedChip2 <= dataBusbuf(7 downto 0); -- autoreset
-							when x"0410" => dac088s085_x3_0w.valuesChip0(0)     <= dataBusbuf(7 downto 0);
+							when x"0402" => dac088s085_x3_0w.valuesChangedChip0 <= databusbuf(7 downto 0); -- autoreset
+							when x"0404" => dac088s085_x3_0w.valuesChangedChip1 <= databusbuf(7 downto 0); -- autoreset
+							when x"0406" => dac088s085_x3_0w.valuesChangedChip2 <= databusbuf(7 downto 0); -- autoreset
+							when x"0410" => dac088s085_x3_0w.valuesChip0(0)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip0(0)              <= '1';
-							when x"0412" => dac088s085_x3_0w.valuesChip0(1)     <= dataBusbuf(7 downto 0);
+							when x"0412" => dac088s085_x3_0w.valuesChip0(1)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip0(1)              <= '1';
-							when x"0414" => dac088s085_x3_0w.valuesChip0(2)     <= dataBusbuf(7 downto 0);
+							when x"0414" => dac088s085_x3_0w.valuesChip0(2)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip0(2)              <= '1';
-							when x"0416" => dac088s085_x3_0w.valuesChip0(3)     <= dataBusbuf(7 downto 0);
+							when x"0416" => dac088s085_x3_0w.valuesChip0(3)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip0(3)              <= '1';
-							when x"0418" => dac088s085_x3_0w.valuesChip0(4)     <= dataBusbuf(7 downto 0);
+							when x"0418" => dac088s085_x3_0w.valuesChip0(4)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip0(4)              <= '1';
-							when x"041a" => dac088s085_x3_0w.valuesChip0(5)     <= dataBusbuf(7 downto 0);
+							when x"041a" => dac088s085_x3_0w.valuesChip0(5)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip0(5)              <= '1';
-							when x"041c" => dac088s085_x3_0w.valuesChip0(6)     <= dataBusbuf(7 downto 0);
+							when x"041c" => dac088s085_x3_0w.valuesChip0(6)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip0(6)              <= '1';
-							when x"041e" => dac088s085_x3_0w.valuesChip0(7)     <= dataBusbuf(7 downto 0);
+							when x"041e" => dac088s085_x3_0w.valuesChip0(7)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip0(7)              <= '1';
-							when x"0420" => dac088s085_x3_0w.valuesChip1(0)     <= dataBusbuf(7 downto 0);
+							when x"0420" => dac088s085_x3_0w.valuesChip1(0)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip0(0)              <= '1';
-							when x"0422" => dac088s085_x3_0w.valuesChip1(1)     <= dataBusbuf(7 downto 0);
+							when x"0422" => dac088s085_x3_0w.valuesChip1(1)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip1(1)              <= '1';
-							when x"0424" => dac088s085_x3_0w.valuesChip1(2)     <= dataBusbuf(7 downto 0);
+							when x"0424" => dac088s085_x3_0w.valuesChip1(2)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip1(2)              <= '1';
-							when x"0426" => dac088s085_x3_0w.valuesChip1(3)     <= dataBusbuf(7 downto 0);
+							when x"0426" => dac088s085_x3_0w.valuesChip1(3)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip1(3)              <= '1';
-							when x"0428" => dac088s085_x3_0w.valuesChip1(4)     <= dataBusbuf(7 downto 0);
+							when x"0428" => dac088s085_x3_0w.valuesChip1(4)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip1(4)              <= '1';
-							when x"042a" => dac088s085_x3_0w.valuesChip1(5)     <= dataBusbuf(7 downto 0);
+							when x"042a" => dac088s085_x3_0w.valuesChip1(5)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip1(5)              <= '1';
-							when x"042c" => dac088s085_x3_0w.valuesChip1(6)     <= dataBusbuf(7 downto 0);
+							when x"042c" => dac088s085_x3_0w.valuesChip1(6)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip1(6)              <= '1';
-							when x"042e" => dac088s085_x3_0w.valuesChip1(7)     <= dataBusbuf(7 downto 0);
+							when x"042e" => dac088s085_x3_0w.valuesChip1(7)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip1(7)              <= '1';
-							when x"0430" => dac088s085_x3_0w.valuesChip2(0)     <= dataBusbuf(7 downto 0);
+							when x"0430" => dac088s085_x3_0w.valuesChip2(0)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip2(0)              <= '1';
-							when x"0432" => dac088s085_x3_0w.valuesChip2(1)     <= dataBusbuf(7 downto 0);
+							when x"0432" => dac088s085_x3_0w.valuesChip2(1)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip2(1)              <= '1';
-							when x"0434" => dac088s085_x3_0w.valuesChip2(2)     <= dataBusbuf(7 downto 0);
+							when x"0434" => dac088s085_x3_0w.valuesChip2(2)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip2(2)              <= '1';
-							when x"0436" => dac088s085_x3_0w.valuesChip2(3)     <= dataBusbuf(7 downto 0);
+							when x"0436" => dac088s085_x3_0w.valuesChip2(3)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip2(3)              <= '1';
-							when x"0438" => dac088s085_x3_0w.valuesChip2(4)     <= dataBusbuf(7 downto 0);
+							when x"0438" => dac088s085_x3_0w.valuesChip2(4)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip2(4)              <= '1';
-							when x"043a" => dac088s085_x3_0w.valuesChip2(5)     <= dataBusbuf(7 downto 0);
+							when x"043a" => dac088s085_x3_0w.valuesChip2(5)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip2(5)              <= '1';
-							when x"043c" => dac088s085_x3_0w.valuesChip2(6)     <= dataBusbuf(7 downto 0);
+							when x"043c" => dac088s085_x3_0w.valuesChip2(6)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip2(6)              <= '1';
-							when x"043e" => dac088s085_x3_0w.valuesChip2(7)     <= dataBusbuf(7 downto 0);
+							when x"043e" => dac088s085_x3_0w.valuesChip2(7)     <= databusbuf(7 downto 0);
 								dac088s085_x3_0w.valuesChangedChip2(7)              <= '1';
 							when others => null;
 						end case;
 
 						case ((controlBus.address(15 downto 1) & "0") and not(subAddressMask)) is
-							when x"100a" => clockConfig_debug_0w.drs4RefClockPeriod <= dataBusbuf(7 downto 0);
-							when x"100c" => triggerDataDelay_0w.numberOfDelayCycles <= dataBusbuf;
+							when x"100a" => clockConfig_debug_0w.drs4RefClockPeriod <= databusbuf(7 downto 0);
+							when x"100c" => triggerDataDelay_0w.numberOfDelayCycles <= databusbuf;
 								triggerDataDelay_0w.resetDelay                          <= '1'; -- autoreset
-							when x"100e" => triggerDataDelay_1w.numberOfDelayCycles <= dataBusbuf;
+							when x"100e" => triggerDataDelay_1w.numberOfDelayCycles <= databusbuf;
 								triggerDataDelay_1w.resetDelay                          <= '1'; -- autoreset
 							when others => null;
 						end case;
 
 						case ((controlBus.address(15 downto 1) & "0") and not(subAddressMask)) is
-							when x"1040" => pixelRateCounter_0w.resetCounter          <= dataBusbuf(7 downto 0); -- autoreset
-							when x"1042" => pixelRateCounter_0w.counterPeriod         <= dataBusbuf;             -- autoreset 
-							when x"1044" => pixelRateCounter_0w.doublePulsePrevention <= dataBusbuf(0);
-							when x"1046" => pixelRateCounter_0w.doublePulseTime       <= dataBusbuf(7 downto 0);
+							when x"1040" => pixelRateCounter_0w.resetCounter          <= databusbuf(7 downto 0); -- autoreset
+							when x"1042" => pixelRateCounter_0w.counterPeriod         <= databusbuf;             -- autoreset 
+							when x"1044" => pixelRateCounter_0w.doublePulsePrevention <= databusbuf(0);
+							when x"1046" => pixelRateCounter_0w.doublePulseTime       <= databusbuf(7 downto 0);
 							when others  => null;
 						end case;
 
 						case ((controlBus.address(15 downto 1) & "0") and not(subAddressMask)) is
 
 							when x"10a4" => drs4_0w.resetStates        <= '1'; -- autoreset
-							when x"10a6" => numberOfSamplesToRead      <= dataBusbuf;
-							when x"10a8" => drs4_0w.sampleMode         <= dataBusbuf(3 downto 0);
-							when x"10aa" => drs4_0w.readoutMode        <= dataBusbuf(3 downto 0);
+							when x"10a6" => numberOfSamplesToRead      <= databusbuf;
+							when x"10a8" => drs4_0w.sampleMode         <= databusbuf(3 downto 0);
+							when x"10aa" => drs4_0w.readoutMode        <= databusbuf(3 downto 0);
 							when x"10ac" => drs4_0w.writeShiftRegister <= dataBusIn(7 downto 0);
 							when others  => null;
 						end case;
 
 						case ((controlBus.address(15 downto 1) & "0") and not(subAddressMask)) is
-							when x"10b0" => ltm9007_14_0w.testMode       <= dataBusbuf(3 downto 0);
+							when x"10b0" => ltm9007_14_0w.testMode       <= databusbuf(3 downto 0);
 								ltm9007_14_0w.init                           <= '1'; -- autoreset
-							when x"10b2" => ltm9007_14_0w.testPattern    <= dataBusbuf(13 downto 0);
-							when x"10b4" => ltm9007_14_0w.bitslipStart   <= dataBusbuf(2 downto 0); -- autoreset 
-							when x"10b6" => ltm9007_14_0w.bitslipPattern <= dataBusbuf(6 downto 0);
+							when x"10b2" => ltm9007_14_0w.testPattern    <= databusbuf(13 downto 0);
+							when x"10b4" => ltm9007_14_0w.bitslipStart   <= databusbuf(2 downto 0); -- autoreset 
+							when x"10b6" => ltm9007_14_0w.bitslipPattern <= databusbuf(6 downto 0);
 
-							when x"10e0" => ltm9007_14_0w.offsetCorrectionRamWrite <= dataBusbuf(7 downto 0); -- autoreset 
-							when x"10e2" => ltm9007_14_0w.offsetCorrectionRamAddress <= dataBusbuf(11 downto 0);
-							when x"10e4" => ltm9007_14_0w.offsetCorrectionRamData    <= dataBusbuf(15 downto 0);
-							when x"10e6" => ltm9007_14_0w.baselineStart              <= dataBusbuf(9 downto 0);
-							when x"10e8" => ltm9007_14_0w.baselineEnd                <= dataBusbuf(9 downto 0);
-							when x"10ea" => ltm9007_14_0w.debugChannelSelector       <= dataBusbuf(2 downto 0);
-							when x"10ee" => ltm9007_14_0w.debugFifoControl           <= dataBusbuf;
+							when x"10e0" => ltm9007_14_0w.offsetCorrectionRamWrite <= databusbuf(7 downto 0); -- autoreset 
+							when x"10e2" => ltm9007_14_0w.offsetCorrectionRamAddress <= databusbuf(11 downto 0);
+							when x"10e4" => ltm9007_14_0w.offsetCorrectionRamData    <= databusbuf(15 downto 0);
+							when x"10e6" => ltm9007_14_0w.baselineStart              <= databusbuf(9 downto 0);
+							when x"10e8" => ltm9007_14_0w.baselineEnd                <= databusbuf(9 downto 0);
+							when x"10ea" => ltm9007_14_0w.debugChannelSelector       <= databusbuf(2 downto 0);
+							when x"10ee" => ltm9007_14_0w.debugFifoControl           <= databusbuf;
 							when others  => null;
 						end case;
 
 						case ((controlBus.address(15 downto 1) & "0") and not(subAddressMask)) is
-							when x"10f0" => iceTad_0w.powerOn    <= dataBusbuf(7 downto 0);
+							when x"10f0" => iceTad_0w.powerOn    <= databusbuf(7 downto 0);
 							when x"10f2" => panelPower_0w.init   <= '1'; -- autoreset 
-							when x"10f4" => panelPower_0w.enable <= dataBusbuf(0);
+							when x"10f4" => panelPower_0w.enable <= databusbuf(0);
 							when others  => null;
 						end case;
 
 						case ((controlBus.address(15 downto 1) & "0") and not(subAddressMask)) is
-							when x"1100" => eventFifoSystem_0w.packetConfig        <= dataBusbuf;
-							when x"1102" => eventFifoSystem_0w.eventsPerIrq        <= dataBusbuf;
-							when x"1104" => eventFifoSystem_0w.irqAtEventFifoWords <= dataBusbuf;
-							when x"1106" => eventFifoSystem_0w.enableIrq           <= dataBusbuf(0);
-							when x"1108" => eventFifoSystem_0w.forceIrq            <= dataBusbuf(0); -- autoreset
-							when x"110a" => eventFifoSystem_0w.clearEventCounter   <= dataBusbuf(0); -- autoreset
+							when x"1100" => eventFifoSystem_0w.packetConfig        <= databusbuf;
+							when x"1102" => eventFifoSystem_0w.eventsPerIrq        <= databusbuf;
+							when x"1104" => eventFifoSystem_0w.irqAtEventFifoWords <= databusbuf;
+							when x"1106" => eventFifoSystem_0w.enableIrq           <= databusbuf(0);
+							when x"1108" => eventFifoSystem_0w.forceIrq            <= databusbuf(0); -- autoreset
+							when x"110a" => eventFifoSystem_0w.clearEventCounter   <= databusbuf(0); -- autoreset
 							when x"110c" => eventFifoSystem_0w.forceMiscData       <= '1';           -- autoreset
-							when x"1114" => eventFifoSystem_0w.drs4ChipSelector    <= dataBusbuf;
+							when x"1114" => eventFifoSystem_0w.drs4ChipSelector    <= databusbuf;
 							when x"112c" => debugReset                             <= '1'; -- autoreset
 							when others  => null;
 						end case;
 
 						case ((controlBus.address(15 downto 1) & "0") and not(subAddressMask)) is
-							when x"11d0" => triggerLogic_0w.triggerSerdesDelay <= dataBusbuf(9 downto 0);
+							when x"11d0" => triggerLogic_0w.triggerSerdesDelay <= databusbuf(9 downto 0);
 								triggerLogic_0w.triggerSerdesDelayInit             <= '1'; --autoreset
-								triggerDataDelay_1w.numberOfDelayCycles            <= x"00" & dataBusbuf(7 downto 0);
+								triggerDataDelay_1w.numberOfDelayCycles            <= x"00" & databusbuf(7 downto 0);
 								triggerDataDelay_1w.resetDelay                     <= '1'; -- autoreset
 
 							when x"11d2" => triggerLogic_0w.softTrigger                          <= '1'; --autoreset
-							when x"11d4" => triggerLogic_0w.triggerMask                          <= dataBusbuf(7 downto 0);
-							when x"11d6" => triggerLogic_0w.singleSeq                            <= dataBusbuf(0);
-							when x"11d8" => triggerLogic_0w.triggerGeneratorEnabled              <= dataBusbuf(0);
-							when x"11da" => triggerLogic_0w.triggerGeneratorPeriod(15 downto 0)  <= unsigned(dataBusbuf);
-							when x"11dc" => triggerLogic_0w.triggerGeneratorPeriod(31 downto 16) <= unsigned(dataBusbuf);
-							when x"11de" => triggerLogic_0w.resetCounter                         <= dataBusbuf(0); -- autoreset
-							when x"11e0" => triggerLogic_0w.counterPeriod                        <= dataBusbuf;    -- autoreset
-							when x"11e8" => triggerLogic_0w.sameEventTime                        <= dataBusbuf(11 downto 0);
-							when x"11ea" => triggerLogic_0w.triggerSum                           <= dataBusbuf(7 downto 0);
-							when x"11ec" => triggerLogic_0w.triggerSec                           <= dataBusbuf(7 downto 0);
+							when x"11d4" => triggerLogic_0w.triggerMask                          <= databusbuf(7 downto 0);
+							when x"11d6" => triggerLogic_0w.singleSeq                            <= databusbuf(0);
+							when x"11d8" => triggerLogic_0w.triggerGeneratorEnabled              <= databusbuf(0);
+							when x"11da" => triggerLogic_0w.triggerGeneratorPeriod(15 downto 0)  <= unsigned(databusbuf);
+							when x"11dc" => triggerLogic_0w.triggerGeneratorPeriod(31 downto 16) <= unsigned(databusbuf);
+							when x"11de" => triggerLogic_0w.resetCounter                         <= databusbuf(0); -- autoreset
+							when x"11e0" => triggerLogic_0w.counterPeriod                        <= databusbuf;    -- autoreset
+							when x"11e8" => triggerLogic_0w.sameEventTime                        <= databusbuf(11 downto 0);
+							when x"11ea" => triggerLogic_0w.triggerSum                           <= databusbuf(7 downto 0);
+							when x"11ec" => triggerLogic_0w.triggerSec                           <= databusbuf(7 downto 0);
 							when others  => null;
 						end case;
 
 						case ((controlBus.address(15 downto 1) & "0") and not(subAddressMask)) is
-							when x"1300" => iceTad_0w.rs485Data(0)   <= dataBusbuf(7 downto 0);
-							when x"1302" => iceTad_0w.rs485Data(1)   <= dataBusbuf(7 downto 0);
-							when x"1304" => iceTad_0w.rs485Data(2)   <= dataBusbuf(7 downto 0);
-							when x"1306" => iceTad_0w.rs485Data(3)   <= dataBusbuf(7 downto 0);
-							when x"1308" => iceTad_0w.rs485Data(4)   <= dataBusbuf(7 downto 0);
-							when x"130a" => iceTad_0w.rs485Data(5)   <= dataBusbuf(7 downto 0);
-							when x"130c" => iceTad_0w.rs485Data(6)   <= dataBusbuf(7 downto 0);
-							when x"130e" => iceTad_0w.rs485Data(7)   <= dataBusbuf(7 downto 0);
-							when x"1310" => iceTad_0w.rs485TxStart   <= dataBusbuf(7 downto 0); -- autoreset
-							when x"1318" => iceTad_0w.rs485FifoClear <= dataBusbuf(7 downto 0); -- autoreset
-							when x"131a" => iceTad_0w.rs485FifoRead  <= dataBusbuf(7 downto 0); -- autoreset
-							when x"131c" => iceTad_0w.softTxEnable   <= dataBusbuf(7 downto 0);
-							when x"131e" => iceTad_0w.softTxMask     <= dataBusbuf(7 downto 0);
-							when x"1330" => registerC                <= dataBusbuf(15 downto 0);
+							when x"1300" => iceTad_0w.rs485Data(0)   <= databusbuf(7 downto 0);
+							when x"1302" => iceTad_0w.rs485Data(1)   <= databusbuf(7 downto 0);
+							when x"1304" => iceTad_0w.rs485Data(2)   <= databusbuf(7 downto 0);
+							when x"1306" => iceTad_0w.rs485Data(3)   <= databusbuf(7 downto 0);
+							when x"1308" => iceTad_0w.rs485Data(4)   <= databusbuf(7 downto 0);
+							when x"130a" => iceTad_0w.rs485Data(5)   <= databusbuf(7 downto 0);
+							when x"130c" => iceTad_0w.rs485Data(6)   <= databusbuf(7 downto 0);
+							when x"130e" => iceTad_0w.rs485Data(7)   <= databusbuf(7 downto 0);
+							when x"1310" => iceTad_0w.rs485TxStart   <= databusbuf(7 downto 0); -- autoreset
+							when x"1318" => iceTad_0w.rs485FifoClear <= databusbuf(7 downto 0); -- autoreset
+							when x"131a" => iceTad_0w.rs485FifoRead  <= databusbuf(7 downto 0); -- autoreset
+							when x"131c" => iceTad_0w.softTxEnable   <= databusbuf(7 downto 0);
+							when x"131e" => iceTad_0w.softTxMask     <= databusbuf(7 downto 0);
+							when x"1330" => registerc                <= databusbuf(15 downto 0);
 							when others  => null;
 						end case;
 
 						case ((controlBus.address(15 downto 1) & "0") and not(subAddressMask)) is
 							when x"1400" => whiteRabbitTiming_0w.newDataLatchedReset <= '1'; -- autoreset
-							when x"1420" => whiteRabbitTiming_0w.counterPeriod       <= dataBusbuf;
+							when x"1420" => whiteRabbitTiming_0w.counterPeriod       <= databusbuf;
 							when others  => null;
 						end case;
 
 						case ((controlBus.address(15 downto 1) & "0") and not(subAddressMask)) is
-							when x"1500" => i2c_control_w.comand(47 downto 32) <= dataBusbuf;
-							when x"1502" => i2c_control_w.comand(31 downto 16) <= dataBusbuf;
-							when x"1504" => i2c_control_w.comand(15 downto 0)  <= dataBusbuf;
+							when x"1500" => i2c_control_w.comand(47 downto 32) <= databusbuf;
+							when x"1502" => i2c_control_w.comand(31 downto 16) <= databusbuf;
+							when x"1504" => i2c_control_w.comand(15 downto 0)  <= databusbuf;
 							when x"1506" => i2c_control_w.start                <= '1'; -- autoreset;
 							when others  => null;
 						end case;
@@ -465,7 +465,7 @@ begin
 					swapreaddata <= controlBus.address(0);
 					case ((controlBus.address(15 downto 1) & "0") and not(subAddressMask)) is
 						when x"0000" => readDataBuffer <= x"00" & registerA;
-						when x"0002" => readDataBuffer <= registerB;
+						when x"0002" => readDataBuffer <= registerb;
 						when x"0004" => readDataBuffer <= x"5555";-- test
 						when x"0006" => readDataBuffer <= x"aaaa";-- test
 						when x"0008" => readDataBuffer <= x"2021";-- jahr
@@ -634,7 +634,7 @@ begin
 						when x"132a" => readDataBuffer                <= "00000" & iceTad_0r.rs485FifoWords(5);
 						when x"132c" => readDataBuffer                <= "00000" & iceTad_0r.rs485FifoWords(6);
 						when x"132e" => readDataBuffer                <= "00000" & iceTad_0r.rs485FifoWords(7);
-						when x"1330" => readDataBuffer                <= registerC;
+						when x"1330" => readDataBuffer                <= registerc;
 						when x"1400" => readDataBuffer                <= x"000" & "000" & whiteRabbitTiming_0r.newDataLatched;
 							whiteRabbitTiming_0r_irigDataLatched          <= whiteRabbitTiming_0r.irigDataLatched;
 							whiteRabbitTiming_0r_irigBinaryYearsLatched   <= whiteRabbitTiming_0r.irigBinaryYearsLatched;

@@ -268,17 +268,17 @@ begin
 				drs4Chipmux <= drs4Chip2d2; -- 2 clk sp�ter
 			end if;
 			-- only for baseline and charge:
-			if BaselinePart = "000" then
+			if baselinePart = "000" then
 				drs4Chipmuxbaseline <= drs4AndAdcData(0);
-			elsif (BaselinePart = "001") or (BaselinePart = "010") then
+			elsif (baselinePart = "001") or (baselinePart = "010") then
 				drs4Chipmuxbaseline <= drs4AndAdcData(1);
 			else
 				drs4Chipmuxbaseline <= drs4AndAdcData(2);
 			end if;
 			-- only for baseline and charge:
-			if ChargePart = "000" then
+			if chargePart = "000" then
 				drs4Chipmuxcharge <= drs4AndAdcData(0);
-			elsif (ChargePart = "001") or (ChargePart = "010") then
+			elsif (chargePart = "001") or (chargePart = "010") then
 				drs4Chipmuxcharge <= drs4AndAdcData(1);
 			else
 				drs4Chipmuxcharge <= drs4AndAdcData(2);
@@ -356,7 +356,7 @@ begin
 	generic map(
 		INIT => X"0000")
 	port map(
-		Q   => samplingDoneDel,                   -- SRL data output
+		Q   => samplingdonedel,                   -- SRL data output
 		A0  => registerWrite.drs4ChipSelector(4), -- Select[0] input
 		A1  => registerWrite.drs4ChipSelector(5), -- Select[1] input
 		A2  => registerWrite.drs4ChipSelector(6), -- Select[2] input
@@ -753,7 +753,7 @@ begin
 								eventFifoInSlots(8) <= drs4Chipmux.adcData.channel(7);
 							end if;
 
-							if (samplingDoneDel = '1') then
+							if (samplingdonedel = '1') then
 								state1          <= nextState;
 								dataTypeCounter <= (others => '0');
 							end if;

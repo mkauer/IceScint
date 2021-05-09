@@ -173,11 +173,11 @@ begin
 							differenceGpsToLocalClockPPS <= to_signed(globalClockRate_Hz, differenceGpsToLocalClockPPS'length) - localClockSubSecondCounter;
 							realTimeCounterLatched       <= realTimeCounter;
 							ppsCounter                   <= ppsCounter + 1;
-							stateGpsPPS                  <= sub;
+							stateGpsPps                  <= sub;
 						end if;
 
 					when sub =>
-						stateGpsPPS               <= idle;
+						stateGpsPps               <= idle;
 						differenceGpsToLocalClock <= differenceGpsToLocalClock + differenceGpsToLocalClockPPS;
 						fakePps                   <= '0';
 						if (fakePps = '1') then

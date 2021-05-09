@@ -408,14 +408,14 @@ begin
 	--- zweites paralelles i2c Interface:
 	--clocks:
 	IO_scl          <= sclint;
-	IO_test_dac_scl <= sclint;
+	IO_TEST_DAC_SCL <= sclint;
 	--sdaout
 	IO_sda <= '0' when sdaout = '0' else
 		'Z';
-	IO_test_dac_sda <= '0' when sdaout = '0' else
+	IO_TEST_DAC_SDA <= '0' when sdaout = '0' else
 		'Z';
 	-- sda in:
-	sdaint <= IO_sda and IO_test_dac_sda;
+	sdaint <= IO_sda and IO_TEST_DAC_SDA;
 
 	----------------------------------------------------------------------------
 	-- toplevel

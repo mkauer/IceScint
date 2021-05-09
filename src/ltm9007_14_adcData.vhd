@@ -258,7 +258,7 @@ begin
 	adcDataGroupB_n <= adcDataA_n(7) & adcDataA_n(5) & adcDataA_n(3) & adcDataA_n(1);
 
 	bitslipPattern <= registerWrite.bitslipPattern when (bitslipPatternOverride = '0') else
-		ltm9007_14_bitslipPattern; --"1100101";
+		LTM9007_14_BITSLIPPATTERN; --"1100101";
 
 	bitslipStart1 <= (registerWrite.bitslipStart(0) or bitslipStart2) when ChannelID = "00" else
 		(registerWrite.bitslipStart(1) or bitslipStart2) when ChannelID = "01" else
@@ -283,8 +283,8 @@ begin
 
 	--sclk <= sclk_i;
 
-	x6 : entity work.serdesIn_1to7 generic map(7, 4, true, "PER_CHANL") port map('1', adcDataGroupA_p, adcDataGroupA_n, adcClocks, bitslipStartLatched_sync, bitslipDone(0), bitslipFailed(0), ltm9007_14_bitslipPattern, "00", dataOutGroupA, open);
-	x7 : entity work.serdesIn_1to7 generic map(7, 4, true, "PER_CHANL") port map('1', adcDataGroupB_p, adcDataGroupB_n, adcClocks, bitslipStartLatched_sync, bitslipDone(1), bitslipFailed(1), ltm9007_14_bitslipPattern, "00", dataOutGroupB, open);
+	x6 : entity work.serdesIn_1to7 generic map(7, 4, true, "PER_CHANL") port map('1', adcDataGroupA_p, adcDataGroupA_n, adcClocks, bitslipStartLatched_sync, bitslipDone(0), bitslipFailed(0), LTM9007_14_BITSLIPPATTERN, "00", dataOutGroupA, open);
+	x7 : entity work.serdesIn_1to7 generic map(7, 4, true, "PER_CHANL") port map('1', adcDataGroupB_p, adcDataGroupB_n, adcClocks, bitslipStartLatched_sync, bitslipDone(1), bitslipFailed(1), LTM9007_14_BITSLIPPATTERN, "00", dataOutGroupB, open);
 
 	--bitslipFailed <= "00";
 	bitslipDoneAll <= '1' when bitslipDone = (bitslipDone'range => '1') else
@@ -472,7 +472,7 @@ begin
 		end if;
 	end process P10;
 
-	fifoemptyout(0) <= fifoemptyA;
+	fifoemptyout(0) <= fifoEmptyA;
 
 	P4 : process (registerWrite.clock)
 		--	variable sampleBufferTwisted : data8x16Bit_t; 
@@ -489,9 +489,9 @@ begin
 			fifoemptyout(1)                            <= '0';
 
 			if registerWrite.debugFifoControl(1 downto 0) = "01" then
-				fifoemptyC <= fifoemptyA;
+				fifoEmptyC <= fifoEmptyA;
 			else
-				fifoemptyC <= fifoemptyA or fifoemptyinA(0) or fifoemptyinB(0);
+				fifoEmptyC <= fifoEmptyA or fifoemptyinA(0) or fifoemptyinB(0);
 			end if;
 			if (registerWrite.reset = '1') then
 				eventFifoFullCounterA      <= to_unsigned(0, eventFifoFullCounterA'length);

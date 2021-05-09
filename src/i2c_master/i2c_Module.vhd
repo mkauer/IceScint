@@ -35,7 +35,7 @@ entity I2CModule is
 		sdaint : in std_logic;
 		-- Regs:
 		registerRead  : out i2c_registerRead_t;
-		registerWrite : in i2C_registerWrite_t
+		registerWrite : in i2c_registerWrite_t
 	);
 
 end I2CModule;
