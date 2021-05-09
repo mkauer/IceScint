@@ -15,9 +15,6 @@ use IEEE.numeric_std.all;
 use work.types.all;
 use work.types_platformSpecific.all;
 
-library unisim;
-use unisim.vcomponents.all;
-
 entity icescint is
 	generic (
 		NUM_RADIO : natural := 3;
@@ -89,6 +86,13 @@ end icescint;
 
 architecture behaviour of icescint is
 	attribute keep : string;
+
+	signal user2regs : user2regs_t;
+	signal clk_10m_buf : std_logic;
+
+	----------------------------------------------------------------------------
+	-- LEGACY below
+	----------------------------------------------------------------------------
 
 	signal addressAndControlBus : std_logic_vector(31 downto 0);
 
@@ -175,6 +179,7 @@ begin
 	x0 : entity work.clockConfig port map(
 		i_clk_10m_ext       => i_clk_10m,
 		i_rst_ext          => i_rst_ext,
+		o_clk_10m_buf => clk_10m_buf,
 		triggerSerdesClocks => triggerSerdesClocks,
 		adcClocks           => adcClocks,
 		debug               => clockConfig_debug,
@@ -461,6 +466,7 @@ begin
 	ltm9007_14r.debugFifoOut               <= ltm9007_14_0r.debugFifoOut;
 
 	x3 : entity work.registerInterface_iceScint port map(
+		user2regs => user2regs,
 		addressAndControlBus       => addressAndControlBus,
 		dataBusIn                  => i_ebi_data_in,
 		dataBusOut                 => o_ebi_data_out,
@@ -509,5 +515,17 @@ begin
 		sdaint        => i_sda_in,
 		registerRead  => i2c_control_r,
 		registerWrite => i2c_control_w
+	);
+
+	irig_receiver_inst : entity work.irig_receiver port map (
+		i_clk_10m => gpsTiming_0w.clock,
+		i_rst_10m => gpsTiming_0w.reset,
+		i_irigb   => i_wr_pps,
+		o_second  => user2regs.wr_second,
+		o_minute  => user2regs.wr_minute,
+		o_hour    => user2regs.wr_hour,
+		o_day     => user2regs.wr_day,
+		o_year    => user2regs.wr_year,
+		o_sec_day => open
 	);
 end behaviour;

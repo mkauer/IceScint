@@ -35,6 +35,8 @@ entity registerInterface_iceScint is
 		dataBusIn            : in std_logic_vector(15 downto 0);
 		dataBusOut           : out std_logic_vector(15 downto 0);
 
+		user2regs : in user2regs_t;
+
 		triggerTimeToRisingEdge_0r : in triggerTimeToRisingEdge_registerRead_t;
 		triggerTimeToRisingEdge_0w : out triggerTimeToRisingEdge_registerWrite_t;
 		eventFifoSystem_0r         : in eventFifoSystem_registerRead_t;
@@ -671,6 +673,11 @@ begin
 						when x"f000" => readDataBuffer <= x"000" & "000" & ltm9007_14_0r.fifoEmptyA;
 						when x"f002" => readDataBuffer <= x"000" & "000" & ltm9007_14_0r.fifoValidA;
 						when x"f004" => readDataBuffer <= x"00" & ltm9007_14_0r.fifoWordsA;
+
+						when x"8100" => readDataBuffer <= user2regs.wr_day & user2regs.wr_year;
+						when x"8102" => readDataBuffer <= "00000000000" & user2regs.wr_hour;
+						when x"8104" => readDataBuffer <= "00" & user2regs.wr_second & "00" & user2regs.wr_minute;
+
 						when others => readDataBuffer <= x"dead";
 					end case;
 				end if;

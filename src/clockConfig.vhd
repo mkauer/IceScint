@@ -30,6 +30,8 @@ entity clockConfig is
 	port (
 		i_clk_10m_ext            : in std_logic;
 		i_rst_ext          : in std_logic;
+
+		o_clk_10m_buf : out std_logic;
 		triggerSerdesClocks : out triggerSerdesClocks_t;
 		adcClocks           : out adcClocks_t;
 		clockValid      : out std_logic;
@@ -110,6 +112,8 @@ begin
 		DIVCLK       => clk_10m_ext_buffered, -- to PLL/DCM
 		SERDESSTROBE => open              -- Output strobe for IOSERDES2
 	);
+
+	o_clk_10m_buf <= clk_10m_ext_buffered;
 
 	-------------------------------------------------------------------------------
 	DCM_SP_inst : DCM_SP

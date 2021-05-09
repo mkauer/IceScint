@@ -19,6 +19,27 @@ package types is
 	type u8_array_t is array (natural range <>) of unsigned(7 downto 0);
 	type slv8_array_t is array (natural range <>) of std_logic_vector(7 downto 0);
 
+	type regs2user_t is record
+		fake : std_logic;
+	end record;
+
+	type user2regs_t is record
+		wr_second  : std_logic_vector(5 downto 0);
+		wr_minute  : std_logic_vector(5 downto 0);
+		wr_hour    : std_logic_vector(4 downto 0);
+		wr_day     : std_logic_vector(8 downto 0);
+		wr_year    : std_logic_vector(6 downto 0);
+	end record;
+
+
+
+
+
+
+	----------------------------------------------------------------------------
+	-- LEGACY below
+	----------------------------------------------------------------------------
+
 	constant numberOfChannels : integer := numberOfChannels_platformSpecific;
 	--constant numberOfChannels : integer := 8, 24 or may be 16;
 	constant globalClockRate_Hz  : integer := globalClockRate_platformSpecific_hz;
