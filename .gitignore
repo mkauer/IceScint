@@ -7,6 +7,7 @@ fuse.log
 fuse.xmsgs
 fuseRelaunch.cmd
 xilinxsim.ini
+vunit_out/
 
 # --- GITIGNORE FROM GITHUB ---
 # intermediate build files
