@@ -27,6 +27,8 @@ entity icescint is
 		i_clk_10m : in std_logic;
 		i_rst_ext : in std_logic;
 
+		i_clk_ebi : in std_logic;
+
 		o_radio_drs4_resetn   : out std_logic; -- chip reset
 		o_radio_drs4_refclock : out std_logic; -- 1 GHz / 2048 reference clock,
 		i_radio_drs4_plllock  : in std_logic_vector(0 to NUM_RADIO - 1);

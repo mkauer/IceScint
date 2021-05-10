@@ -165,6 +165,7 @@ architecture behaviour of icescint_io is
 	signal clk_10m_osc : std_logic;
 	signal clk_10m_wr  : std_logic;
 	signal clk_10m_gps : std_logic;
+	signal clk_ebi_mck : std_logic;
 
 	----------------------------------------------------------------------------
 	-- LEGACY BELOW
@@ -214,6 +215,12 @@ begin
     ----------------------------------------------------------------------------
     -- Clocks and Resets
     ----------------------------------------------------------------------------
+
+	bufg_ebi_mck : BUFG
+	port map (
+		I => I_EBI1_MCK,
+		O => clk_ebi_mck
+	);
     
 	----------------------------------------------------------------------------
 	-- IO buffers
