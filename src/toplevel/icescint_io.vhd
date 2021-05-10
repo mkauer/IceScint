@@ -35,11 +35,11 @@ entity icescint_io is
 		O_EXT_TRIG_OUT_N : out std_logic; -- LVDS
 
 		-- scintillation panel interface (uDAQs)
-		I_PANEL_TRIGGER : in std_logic_vector(7 downto 0);
-		I_PANEL_RS485_RX : in std_logic_vector(7 downto 0);
-		O_PANEL_RS485_TX : out std_logic_vector(7 downto 0);
-		O_PANEL_RS485_DE : out std_logic_vector(7 downto 0);
-		O_PANEL_NP24V_ON : out std_logic_vector(7 downto 0);
+		I_PANEL_TRIGGER : in std_logic_vector(0 to 7);
+		I_PANEL_RS485_RX : in std_logic_vector(0 to 7);
+		O_PANEL_RS485_TX : out std_logic_vector(0 to 7);
+		O_PANEL_RS485_DE : out std_logic_vector(0 to 7);
+		O_PANEL_NP24V_ON : out std_logic_vector(0 to 7);
 
 		-- trigger to be used by the AERA board
 		O_AERA_TRIG_P : out std_logic; -- LVDS
