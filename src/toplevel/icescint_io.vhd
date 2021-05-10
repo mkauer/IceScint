@@ -162,6 +162,15 @@ end icescint_io;
 architecture behaviour of icescint_io is
 	attribute keep : string;
 
+	signal clk_10m_osc : std_logic;
+	signal clk_10m_wr  : std_logic;
+	signal clk_10m_gps : std_logic;
+	signal clk_ebi_mck : std_logic;
+
+	----------------------------------------------------------------------------
+	-- LEGACY BELOW
+	----------------------------------------------------------------------------
+
 	signal radio_drs4_resetn   : std_logic;
 	signal radio_drs4_refclock : std_logic;
 	signal radio_drs4_plllock  : std_logic_vector(0 to 2);
@@ -202,6 +211,17 @@ architecture behaviour of icescint_io is
 	signal wr_clock : std_logic;
 	signal wr_pps : std_logic;
 begin
+    
+    ----------------------------------------------------------------------------
+    -- Clocks and Resets
+    ----------------------------------------------------------------------------
+
+	bufg_ebi_mck : BUFG
+	port map (
+		I => I_EBI1_MCK,
+		O => clk_ebi_mck
+	);
+    
 	----------------------------------------------------------------------------
 	-- IO buffers
 	----------------------------------------------------------------------------
@@ -268,9 +288,9 @@ begin
 		ibufds_adc_dcoa : IBUFDS generic map(
 			DIFF_TERM => true
 		) port map(
+			O => open,
 			I => I_ADC_DCOA_P(i),
-			IB => I_ADC_DCOA_N(i),
-			O => open
+			IB => I_ADC_DCOA_N(i)
 		);
 
 		ibufds_adc_dcob : IBUFDS generic map(
