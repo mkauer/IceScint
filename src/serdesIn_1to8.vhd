@@ -149,8 +149,8 @@ architecture behavioral of serdesIn_1to8 is
 
 begin
 
-	rxioclk        <= triggerSerdesClocks.clk_950_serdes_io;
-	rxserdesstrobe <= triggerSerdesClocks.serdes_strobe_950;
+	rxioclk        <= triggerSerdesClocks.clk_800_serdes_io;
+	rxserdesstrobe <= triggerSerdesClocks.serdes_strobe_800;
 	gclk           <= triggerSerdesClocks.clk_118_serdes_div8;
 	reset          <= triggerSerdesClocks.rst_div8;
 	--reset <= triggerSerdesClocks.asyncReset;

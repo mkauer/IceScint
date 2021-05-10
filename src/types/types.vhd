@@ -110,8 +110,8 @@ package types is
 	type triggerSerdesClocks_t is record
 		rst_div8 : std_logic;
 		clk_118_serdes_div8      : std_logic;
-		clk_950_serdes_io       : std_logic;
-		serdes_strobe_950        : std_logic;
+		clk_800_serdes_io       : std_logic;
+		serdes_strobe_800        : std_logic;
 		asyncReset          : std_logic; -- ## remove
 	end record;
 	-------------------------------------------------------------------------------
