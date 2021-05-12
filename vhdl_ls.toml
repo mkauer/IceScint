@@ -3,6 +3,7 @@
 icescint.files = [
   'src/**/*.vhd',
   'ip/**/*.vhd',
+  'lib/**/*.vhd',
 ]
 #XilinxCoreLib.files = [
 #  '/opt/Xilinx/14.7/ISE_DS/ISE/vhdl/src/XilinxCoreLib/**/*.vhd',

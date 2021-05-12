@@ -14,10 +14,10 @@ entity icescint_io is
 		-- with FPGA configuration time
 
 		-- all oscillators use 2.5V CMOS I/O
-		I_QOSC1_OUT       : in std_logic; -- NOT USED
+		I_QOSC1_OUT       : in std_logic; -- 25 MHZ, NOT USED
 		O_QOSC1_DAC_SYNCn : out std_logic;
 
-		I_QOSC2_OUT       : in std_logic;
+		I_QOSC2_OUT       : in std_logic;  -- 10 MHz
 		O_QOSC2_ENA       : out std_logic; -- NOT USED, QOSC2 does not have enable input
 		O_QOSC2_DAC_SYNCn : out std_logic;
 		O_QOSC2_DAC_SCKL  : out std_logic;
@@ -162,10 +162,29 @@ end icescint_io;
 architecture behaviour of icescint_io is
 	attribute keep : string;
 
-	signal clk_10m_osc : std_logic;
-	signal clk_10m_wr  : std_logic;
-	signal clk_10m_gps : std_logic;
-	signal clk_ebi_mck : std_logic;
+	signal clk_10m_osc  : std_logic;
+	signal clk_10m_wr   : std_logic;
+	signal clk_10m_gps  : std_logic;
+	signal clk_platform : std_logic;
+	
+	signal rst_ext_async : std_logic;
+	signal rst_10m_osc   : std_logic;
+	signal rst_platform  : std_logic;
+
+	signal plat_clock_detect_wr  : std_logic;
+	signal plat_clock_detect_gps : std_logic;
+	signal plat_reg_clock_detect : register_t := x"0000";
+
+	signal plat_dcm_locked : std_logic;
+	signal plat_rst_input  : std_logic;
+
+	signal plat_ebi_data_out : std_logic_vector(15 downto 0);
+	signal plat_ebi_addr     : std_logic_vector(15 downto 0);
+	
+	signal plat_ebi_read_async  : std_logic;
+	signal plat_ebi_write_async : std_logic;
+	signal plat_ebi_read  : std_logic;
+	signal plat_ebi_write : std_logic;
 
 	----------------------------------------------------------------------------
 	-- LEGACY BELOW
@@ -193,6 +212,9 @@ architecture behaviour of icescint_io is
 	signal radio_dac_do        : std_logic;
 	signal radio_dac_sck       : std_logic;
 	signal radio_power24n      : std_logic;
+	
+	-- TODO: rename and clean up
+	signal ebi_data_out_muxed : register_t;
 
 	signal ebi_address  : std_logic_vector(23 downto 0);
 	signal ebi_data_in  : std_logic_vector(15 downto 0);
@@ -216,12 +238,168 @@ begin
     -- Clocks and Resets
     ----------------------------------------------------------------------------
 
-	bufg_ebi_mck : BUFG
-	port map (
-		I => I_EBI1_MCK,
-		O => clk_ebi_mck
-	);
+	-- 10 MHz Oscillator -------------------------------------------------------
+
+	bufg_10m_osc : BUFG
+		port map (
+			O => clk_10m_osc,
+			I => I_QOSC2_OUT
+		);
+	
+	rst_ext_async <= not I_PON_RESETn;
+	
+	rst_sync_10m_osc : entity work.reset_synchronizer
+		generic map(
+			G_RELEASE_DELAY_CYCLES => 5
+		)
+		port map(
+			i_reset => rst_ext_async,
+			i_clk   => clk_10m_osc,
+			o_reset => rst_10m_osc
+		);
+
+	-- 10 MHz White Rabbit -----------------------------------------------------
+
+	bufg_10m_wr : BUFG
+		port map (
+			O => clk_10m_wr,
+			I => wr_clock
+		);
+
+	-- 10 MHz GPS --------------------------------------------------------------
+
+	bufg_10m_gps : BUFG
+		port map (
+			O => clk_10m_gps,
+			I => I_GPS_TIMEPULSE2
+		);
+
+	-- Platform Clock
+
+	DCM_CLKGEN_inst : DCM_CLKGEN
+		generic map (
+			CLKFXDV_DIVIDE => 2,       -- CLKFXDV divide value (2, 4, 8, 16, 32)
+			CLKFX_DIVIDE => 1,         -- Divide value - D - (1-256)
+			CLKFX_MD_MAX => 12.0,      -- Specify maximum M/D ratio for timing anlysis
+			CLKFX_MULTIPLY => 24,      -- Multiply value - M - (2-256)
+			CLKIN_PERIOD => 0.0,       -- Input clock period specified in nS
+			SPREAD_SPECTRUM => "NONE", -- Spread Spectrum mode "NONE", "CENTER_LOW_SPREAD", "CENTER_HIGH_SPREAD", "VIDEO_LINK_M0", "VIDEO_LINK_M1" or "VIDEO_LINK_M2" 
+			STARTUP_WAIT => FALSE      -- Delay config DONE until DCM_CLKGEN LOCKED (TRUE/FALSE)
+		)
+		port map (
+			CLKFX => clk_platform,         -- 1-bit output: Generated clock output
+			LOCKED => plat_dcm_locked, -- 1-bit output: Locked output
+			CLKIN => clk_10m_osc,          -- 1-bit input: Input clock
+			FREEZEDCM => '0',              -- 1-bit input: Prevents frequency adjustments to input clock
+			PROGCLK => '0',                -- 1-bit input: Clock input for M/D reconfiguration
+			PROGDATA => '0',               -- 1-bit input: Serial data input for M/D reconfiguration
+			PROGEN => '0',                 -- 1-bit input: Active high program enable
+			RST => rst_10m_osc             -- 1-bit input: Reset input pin
+		);
+
+	plat_rst_input <= rst_10m_osc or (not plat_dcm_locked);
+
+	rst_sync_platform : entity work.reset_synchronizer
+		generic map(
+			G_RELEASE_DELAY_CYCLES => 5
+		)
+		port map(
+			i_reset => plat_rst_input,
+			i_clk   => clk_platform,
+			o_reset => rst_platform
+		);
     
+	----------------------------------------------------------------------------
+	-- Clock Detectors
+	----------------------------------------------------------------------------
+
+	clock_detector_wr : entity work.clock_detector
+		generic map(
+			G_DETECT_DIV    => 2,
+			G_TIMEOUT       => 63,
+			G_STABLE_THRESH => 7
+		)
+		port map(
+			i_clk    => clk_platform,
+			i_rst    => rst_platform,
+			i_detect => clk_10m_wr,
+			o_stable => plat_clock_detect_wr
+		);
+
+	clock_detector_gps : entity work.clock_detector
+		generic map(
+			G_DETECT_DIV    => 2,
+			G_TIMEOUT       => 63,
+			G_STABLE_THRESH => 7
+		)
+		port map(
+			i_clk    => clk_platform,
+			i_rst    => rst_platform,
+			i_detect => clk_10m_gps,
+			o_stable => plat_clock_detect_gps
+		);
+
+	----------------------------------------------------------------------------
+	-- Platform Register Read
+	----------------------------------------------------------------------------
+	
+	plat_ebi_read_async <= (not I_EBI1_NCS2) and (not I_EBI1_NRD);
+	plat_ebi_write_async <= (not I_EBI1_NCS2) and (not I_EBI1_NWE);
+	
+	sync_plat_ebi_read : entity work.synchronizer
+		generic map(
+			G_INIT_VALUE    => '0',
+			G_NUM_GUARD_FFS => 1
+		)
+		port map(
+			i_reset => rst_platform,
+			i_clk   => clk_platform,
+			i_data  => plat_ebi_read_async,
+			o_data  => plat_ebi_read
+		);
+	
+	sync_plat_ebi_write : entity work.synchronizer
+		generic map(
+			G_INIT_VALUE    => '0',
+			G_NUM_GUARD_FFS => 1
+		)
+		port map(
+			i_reset => rst_platform,
+			i_clk   => clk_platform,
+			i_data  => plat_ebi_write_async,
+			o_data  => plat_ebi_write
+		);
+	
+	-- update read register values when not reading
+	p_register_read : process(clk_platform)
+	begin
+		if rising_edge(clk_platform) then
+			if rst_platform = '1' then
+				plat_reg_clock_detect <= x"0000";
+			else
+				if plat_ebi_read = '0' then
+					plat_reg_clock_detect <= (
+						0 => plat_clock_detect_wr,
+						1 => plat_clock_detect_gps,
+						others => '0'
+					);
+				end if;
+			end if;
+		end if;
+	end process;
+	
+	plat_ebi_addr <= ebi_address(15 downto 0);
+
+	with plat_ebi_addr select plat_ebi_data_out <=
+		plat_reg_clock_detect when x"0000",
+		(
+			0 => rst_platform,
+			1 => rst_10m_osc,
+			2 => plat_dcm_locked,
+			others => '0'
+		) when x"0002",
+		x"dead" when others;
+
 	----------------------------------------------------------------------------
 	-- IO buffers
 	----------------------------------------------------------------------------
@@ -308,6 +486,9 @@ begin
 	ebi_select <= not I_EBI1_NCS2;
 	ebi_address <= "000" & I_EBI1_ADDR;
 	O_EBI1_NWAIT <= '1';
+	
+	ebi_data_out_muxed <= ebi_data_out when I_EBI1_ADDR(16) = '0' else plat_ebi_data_out;
+	
 	gen_ebi_data : for i in 0 to 15 generate
 		iobuf_inst : IOBUF generic map(
 			DRIVE => 2,
@@ -319,7 +500,7 @@ begin
 		port map(
 			IO => IO_EBI1_D(i),
 			O  => ebi_data_in(i),
-			I  => ebi_data_out(i), 
+			I  => ebi_data_out_muxed(i), 
 			T  => I_EBI1_NRD
 		);
 	end generate;
