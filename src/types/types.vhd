@@ -18,8 +18,21 @@ package types is
 
 	subtype register_t is std_logic_vector(15 downto 0);
 
+	type user2regs_io_t is record
+		clk_detect_wr  : std_logic;
+		clk_detect_gps : std_logic;
+	end record;
+	
+	type regs2user_io_t is record
+		dummy : std_logic;
+	end record;
+
 	type u8_array_t is array (natural range <>) of unsigned(7 downto 0);
 	type slv8_array_t is array (natural range <>) of std_logic_vector(7 downto 0);
+
+	----------------------------------------------------------------------------
+	-- LEGACY BELOW
+	----------------------------------------------------------------------------
 
 	constant numberOfChannels : integer := numberOfChannels_platformSpecific;
 	--constant numberOfChannels : integer := 8, 24 or may be 16;
@@ -78,12 +91,6 @@ package types is
 	function countZerosFromRight8(patternIn : std_logic_vector) return unsigned;
 	function getFistOneFromRight8(patternIn : std_logic_vector) return integer;
 
-	--function fillZerosFromLeft8(patternIn : std_logic_vector) return std_logic_vector;
-	--function fillZerosFromRight8(patternIn : std_logic_vector) return std_logic_vector;
-	--function fillOnesFromLeft8(patternIn : std_logic_vector) return std_logic_vector;
-	--function fillOnesFromRight8(patternIn : std_logic_vector) return std_logic_vector;
-	--	function fillXFromY8(value : string; direction : string; patternIn : std_logic_vector) return std_logic_vector;
-
 	function reverse_vector (a : in std_logic_vector) return std_logic_vector;
 
 	function findFallingEdgeFromRight9(patternIn : std_logic_vector) return unsigned;
@@ -100,14 +107,6 @@ package types is
 	function i2u(value : integer; width : integer) return unsigned;
 
 	-------------------------------------------------------------------------------
-
-	--	type drs4Clocks_t is record
-	--		drs4Clock_125MHz : std_logic;
-	--		drs4RefClock : std_logic;
-	--		adcSerdesDivClockPhase : std_logic;
-	--		--drs4SamplingClock : std_logic;
-	--		--AdcSamplingClock : std_logic;
-	--	end record;
 
 	type triggerSerdesClocks_t is record
 		rst_div8 : std_logic;
@@ -934,8 +933,6 @@ end types;
 
 package body types is
 
-	--constant numberOfChannels : integer := numberOfChannels_platformSpecific;
-
 	function smc_vectorToBus(inputVector : std_logic_vector) return smc_bus is
 		variable temp                        : smc_bus;
 	begin
@@ -954,7 +951,6 @@ package body types is
 		variable temp                     : std_logic_vector(31 downto 0);
 	begin
 		temp(23 downto 0) := inputBus.address;
-		--	temp(24) := inputBus.write;
 		temp(25) := inputBus.writeStrobe;
 		temp(26) := inputBus.read;
 		temp(27) := inputBus.readStrobe;
@@ -973,7 +969,6 @@ package body types is
 		temp.address    := inputBus.address;
 		temp.read       := inputBus.read;
 		temp.readStrobe := inputBus.readStrobe;
-		--	temp.write := inputBus.write;
 		temp.writeStrobe := inputBus.writeStrobe;
 		return temp;
 	end;
@@ -1080,116 +1075,6 @@ package body types is
 		return temp;
 	end;
 
-	--	function fillXFromY8(value : string; direction : string; patternIn : std_logic_vector) return std_logic_vector is
-	--		variable temp : std_logic_vector(patternIn'range);
-	--		variable v : std_logic;
-	--		variable nv : std_logic;
-	--	begin
-	--		if(value = "ONES") then
-	--			v := '1';	
-	--			nv := '0';	
-	--			if(direction = "FROM_RIGHT") then
-	--				if(std_match(patternIn, "-------1")) then
-	--					temp := (others=>v);
-	--				elsif(std_match(patternIn, "------10")) then
-	--					temp := (0=>nv,others=>v);
-	--				elsif(std_match(patternIn, "-----100")) then
-	--					temp := (0|1=>nv,others=>v);
-	--				elsif(std_match(patternIn, "----1000")) then
-	--					temp := (0|1|2=>nv,others=>v);
-	--				elsif(std_match(patternIn, "---10000")) then
-	--					temp := (0|1|2|3=>nv,others=>v);
-	--				elsif(std_match(patternIn, "--100000")) then
-	--					temp := (0|1|2|3|4=>nv,others=>v);
-	--				elsif(std_match(patternIn, "-1000000")) then
-	--					temp := (0|1|2|3|4|5=>nv,others=>v);
-	--				elsif(std_match(patternIn, "10000000")) then
-	--					temp := (0|1|2|3|4|5|6=>nv,others=>v);
-	--				elsif(std_match(patternIn, "00000000")) then
-	--					temp := (others=>nv);
-	--				else
-	--					temp := (others=>nv); -- illegal
-	--				end if;
-	--			elsif(direction = "FROM_LEFT") then
-	--				if(std_match(patternIn, "1-------")) then
-	--					temp := (others=>v);
-	--				elsif(std_match(patternIn, "01------")) then
-	--					temp := (7=>nv,others=>v);
-	--				elsif(std_match(patternIn, "001-----")) then
-	--					temp := (6|7=>nv,others=>v);
-	--				elsif(std_match(patternIn, "0001----")) then
-	--					temp := (5|6|7=>nv,others=>v);
-	--				elsif(std_match(patternIn, "00001---")) then
-	--					temp := (4|5|6|7=>nv,others=>v);
-	--				elsif(std_match(patternIn, "000001--")) then
-	--					temp := (3|4|5|6|7=>nv,others=>v);
-	--				elsif(std_match(patternIn, "0000001-")) then
-	--					temp := (2|3|4|5|6|7=>nv,others=>v);
-	--				elsif(std_match(patternIn, "00000001")) then
-	--					temp := (1|2|3|4|5|6|7=>nv,others=>v);
-	--				elsif(std_match(patternIn, "00000000")) then
-	--					temp := (others=>nv);
-	--				else
-	--					temp := (others=>nv); -- illegal
-	--				end if;
-	--			else
-	--				temp := (others=>'0'); -- illegal
-	--			end if;
-	--		elsif(value = "ZEROS") then
-	--			if(direction = "FROM_RIGHT") then
-	--				if(std_match(patternIn, "-------0")) then
-	--					temp := "00000000";
-	--				elsif(std_match(patternIn, "------01")) then
-	--					temp := "00000001";
-	--				elsif(std_match(patternIn, "-----011")) then
-	--					temp := "00000011";
-	--				elsif(std_match(patternIn, "----0111")) then
-	--					temp := "00000111";
-	--				elsif(std_match(patternIn, "---01111")) then
-	--					temp := "00001111";
-	--				elsif(std_match(patternIn, "--011111")) then
-	--					temp := "00011111";
-	--				elsif(std_match(patternIn, "-0111111")) then
-	--					temp := "00111111";
-	--				elsif(std_match(patternIn, "01111111")) then
-	--					temp := "01111111";
-	--				elsif(std_match(patternIn, "11111111")) then
-	--					temp := "11111111";
-	--				else
-	--					temp := "11111111"; -- illegal
-	--				end if;
-	--			elsif(direction = "FROM_LEFT") then
-	--				if(std_match(patternIn, "0-------")) then
-	--					temp := "00000000";
-	--				elsif(std_match(patternIn, "10------")) then
-	--					temp := "10000000";
-	--				elsif(std_match(patternIn, "110-----")) then
-	--					temp := "11000000";
-	--				elsif(std_match(patternIn, "1110----")) then
-	--					temp := "11100000";
-	--				elsif(std_match(patternIn, "11110---")) then
-	--					temp := "11110000";
-	--				elsif(std_match(patternIn, "111110--")) then
-	--					temp := "11111000";
-	--				elsif(std_match(patternIn, "1111110-")) then
-	--					temp := "11111100";
-	--				elsif(std_match(patternIn, "11111110")) then
-	--					temp := "11111110";
-	--				elsif(std_match(patternIn, "11111111")) then
-	--					temp := "11111111";
-	--				else
-	--					temp := "11111111";
-	--				end if;
-	--			else
-	--				temp := (others=>'1'); -- illegal
-	--			end if;
-	--		else
-	--			temp := (others=>'0'); -- illegal
-	--		end if;
-	--
-	--		return temp;
-	--	end;
-
 	function reverse_vector (a : in std_logic_vector) return std_logic_vector is
 		variable result            : std_logic_vector(a'range);
 		alias aa                   : std_logic_vector(a'REVERSE_RANGE) is a;
@@ -1219,10 +1104,6 @@ package body types is
 			temp := "0110";
 		elsif (std_match(patternIn, "01-------")) then
 			temp := "0111";
-			--elsif(std_match(patternIn, "00000000")) then
-			--	temp := "1000";
-			--elsif(std_match(patternIn, "11111111")) then
-			--	temp := "1000";
 		else
 			temp := "1000";
 		end if;
@@ -1257,11 +1138,8 @@ package body types is
 	end;
 
 	function std_logic_vector_TIG(value : std_logic_vector) return std_logic_vector is
-		--variable temp_TPTHRU_TIG : std_logic_vector(value'length-1 downto 0);
 		variable temp : std_logic_vector(value'range);
-		--attribute keep of temp_TPTHRU_TIG: variable is "true";
 	begin
-		--temp_TPTHRU_TIG := value;
 		for i in value'range loop
 			temp(i) := std_logic_TIG(value(i));
 		end loop;
@@ -1286,31 +1164,4 @@ package body types is
 	begin
 		return to_unsigned(value, width);
 	end;
-
-	---- Example 1
-	--  function <function_name>  (signal <signal_name> : in <type_declaration>  ) return <type_declaration> is
-	--    variable <variable_name>     : <type_declaration>;
-	--  begin
-	--    <variable_name> := <signal_name> xor <signal_name>;
-	--    return <variable_name>; 
-	--  end <function_name>;
-
-	---- Example 2
-	--  function <function_name>  (signal <signal_name> : in <type_declaration>;
-	--                         signal <signal_name>   : in <type_declaration>  ) return <type_declaration> is
-	--  begin
-	--    if (<signal_name> = '1') then
-	--      return <signal_name>;
-	--    else
-	--      return 'Z';
-	--    end if;
-	--  end <function_name>;
-
-	---- Procedure Example
-	--  procedure <procedure_name>  (<type_declaration> <constant_name>  : in <type_declaration>) is
-	--    
-	--  begin
-	--    
-	--  end <procedure_name>;
-
 end types;

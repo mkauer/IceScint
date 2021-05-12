@@ -8,154 +8,150 @@ library unisim;
 use unisim.vcomponents.all;
 
 entity icescint_io is
-	port (
-		I_PON_RESETn : in std_logic; -- 2.5V CMOS with pullup, reset (active low, by power monitor LTC2903-A1)
+	port(
+		I_PON_RESETn      : in    std_logic; -- 2.5V CMOS with pullup, reset (active low, by power monitor LTC2903-A1)
 		-- 200 ms after all power lines are settled, might be useless due to race condition
 		-- with FPGA configuration time
 
 		-- all oscillators use 2.5V CMOS I/O
-		I_QOSC1_OUT       : in std_logic; -- 25 MHZ, NOT USED
-		O_QOSC1_DAC_SYNCn : out std_logic;
-
-		I_QOSC2_OUT       : in std_logic;  -- 10 MHz
-		O_QOSC2_ENA       : out std_logic; -- NOT USED, QOSC2 does not have enable input
-		O_QOSC2_DAC_SYNCn : out std_logic;
-		O_QOSC2_DAC_SCKL  : out std_logic;
-		O_QOSC2_DAC_SDIN  : out std_logic;
-
+		I_QOSC1_OUT       : in    std_logic; -- 25 MHZ, NOT USED
+		O_QOSC1_DAC_SYNCn : out   std_logic;
+		I_QOSC2_OUT       : in    std_logic; -- 10 MHz
+		O_QOSC2_ENA       : out   std_logic; -- NOT USED, QOSC2 does not have enable input
+		O_QOSC2_DAC_SYNCn : out   std_logic;
+		O_QOSC2_DAC_SCKL  : out   std_logic;
+		O_QOSC2_DAC_SDIN  : out   std_logic;
 		-- EXT_CLK used for white rabbit
-		I_EXT_CLK_P      : in std_logic;  -- LVDS
-		I_EXT_CLK_N      : in std_logic;  -- LVDS
-		I_EXT_PPS_P      : in std_logic;  -- LVDS
-		I_EXT_PPS_N      : in std_logic;  -- LVDS
+		I_EXT_CLK_P       : in    std_logic; -- LVDS
+		I_EXT_CLK_N       : in    std_logic; -- LVDS
+		I_EXT_PPS_P       : in    std_logic; -- LVDS
+		I_EXT_PPS_N       : in    std_logic; -- LVDS
 
-		I_EXT_TRIG_IN_P  : in std_logic;  -- LVDS
-		I_EXT_TRIG_IN_N  : in std_logic;  -- LVDS
-		O_EXT_TRIG_OUT_P : out std_logic; -- LVDS
-		O_EXT_TRIG_OUT_N : out std_logic; -- LVDS
+		I_EXT_TRIG_IN_P   : in    std_logic; -- LVDS
+		I_EXT_TRIG_IN_N   : in    std_logic; -- LVDS
+		O_EXT_TRIG_OUT_P  : out   std_logic; -- LVDS
+		O_EXT_TRIG_OUT_N  : out   std_logic; -- LVDS
 
 		-- scintillation panel interface (uDAQs)
-		I_PANEL_TRIGGER : in std_logic_vector(0 to 7);
-		I_PANEL_RS485_RX : in std_logic_vector(0 to 7);
-		O_PANEL_RS485_TX : out std_logic_vector(0 to 7);
-		O_PANEL_RS485_DE : out std_logic_vector(0 to 7);
-		O_PANEL_NP24V_ON : out std_logic_vector(0 to 7);
-
+		I_PANEL_TRIGGER   : in    std_logic_vector(0 to 7);
+		I_PANEL_RS485_RX  : in    std_logic_vector(0 to 7);
+		O_PANEL_RS485_TX  : out   std_logic_vector(0 to 7);
+		O_PANEL_RS485_DE  : out   std_logic_vector(0 to 7);
+		O_PANEL_NP24V_ON  : out   std_logic_vector(0 to 7);
 		-- trigger to be used by the AERA board
-		O_AERA_TRIG_P : out std_logic; -- LVDS
-		O_AERA_TRIG_N : out std_logic; -- LVDS
+		O_AERA_TRIG_P     : out   std_logic; -- LVDS
+		O_AERA_TRIG_N     : out   std_logic; -- LVDS
 
 		-- ADC #1..3, LTM9007-14, 8 channel, ser out, 40 MSPS max., LVDS outputs
 		-- the direction used for the pins is (0 to 7) but will be assigned to a (7 downto 0)
 		-- we do this to compensate the non logical order in the pcb
-		I_ADC_OUTA_1P : in std_logic_vector(0 to 7); -- LVDS, iserdes inputs
-		I_ADC_OUTA_1N : in std_logic_vector(0 to 7);
-		I_ADC_OUTA_2P : in std_logic_vector(0 to 7); -- LVDS, iserdes inputs
-		I_ADC_OUTA_2N : in std_logic_vector(0 to 7);
-		I_ADC_OUTA_3P : in std_logic_vector(0 to 7); -- LVDS, iserdes inputs
-		I_ADC_OUTA_3N : in std_logic_vector(0 to 7);
-
-		I_ADC_FRA_P    : in std_logic_vector(1 to 3); -- Frame Start for Channels 1, 4, 5 and 8
-		I_ADC_FRA_N    : in std_logic_vector(1 to 3);
-		I_ADC_FRB_P    : in std_logic_vector(1 to 3); -- Frame Start for Channels 2, 3, 6 and 7
-		I_ADC_FRB_N    : in std_logic_vector(1 to 3);
-		I_ADC_DCOA_P   : in std_logic_vector(1 to 3);-- Data Clock for Channels 1, 4, 5 and 8
-		I_ADC_DCOA_N   : in std_logic_vector(1 to 3);
-		I_ADC_DCOB_P   : in std_logic_vector(1 to 3);-- Data Clock for Channels 2, 3, 6 and 7
-		I_ADC_DCOB_N   : in std_logic_vector(1 to 3);
-		O_ADC_ENC_P    : out std_logic_vector(1 to 3); -- LVDS, conversion clock, conversion starts at rising edge
-		O_ADC_ENC_N    : out std_logic_vector(1 to 3);
-		O_ADC_PAR_SERn : out std_logic;                -- Incorrect signal removed completely from design. This Should be tied to ground.
-		O_ADC_SDI      : out std_logic;                -- shared serial interface data input
-		O_ADC_SCK      : out std_logic;                -- shared serial interface clock input
-		O_ADC_CSA      : out std_logic_vector(1 to 3); -- serial interfacechip select, channels 1, 4, 5 and 8
-		O_ADC_CSB      : out std_logic_vector(1 to 3); -- serial interfacechip select, channels 2, 3, 6 and 7
+		I_ADC_OUTA_1P     : in    std_logic_vector(0 to 7); -- LVDS, iserdes inputs
+		I_ADC_OUTA_1N     : in    std_logic_vector(0 to 7);
+		I_ADC_OUTA_2P     : in    std_logic_vector(0 to 7); -- LVDS, iserdes inputs
+		I_ADC_OUTA_2N     : in    std_logic_vector(0 to 7);
+		I_ADC_OUTA_3P     : in    std_logic_vector(0 to 7); -- LVDS, iserdes inputs
+		I_ADC_OUTA_3N     : in    std_logic_vector(0 to 7);
+		I_ADC_FRA_P       : in    std_logic_vector(1 to 3); -- Frame Start for Channels 1, 4, 5 and 8
+		I_ADC_FRA_N       : in    std_logic_vector(1 to 3);
+		I_ADC_FRB_P       : in    std_logic_vector(1 to 3); -- Frame Start for Channels 2, 3, 6 and 7
+		I_ADC_FRB_N       : in    std_logic_vector(1 to 3);
+		I_ADC_DCOA_P      : in    std_logic_vector(1 to 3); -- Data Clock for Channels 1, 4, 5 and 8
+		I_ADC_DCOA_N      : in    std_logic_vector(1 to 3);
+		I_ADC_DCOB_P      : in    std_logic_vector(1 to 3); -- Data Clock for Channels 2, 3, 6 and 7
+		I_ADC_DCOB_N      : in    std_logic_vector(1 to 3);
+		O_ADC_ENC_P       : out   std_logic_vector(1 to 3); -- LVDS, conversion clock, conversion starts at rising edge
+		O_ADC_ENC_N       : out   std_logic_vector(1 to 3);
+		O_ADC_PAR_SERn    : out   std_logic; -- Incorrect signal removed completely from design. This Should be tied to ground.
+		O_ADC_SDI         : out   std_logic; -- shared serial interface data input
+		O_ADC_SCK         : out   std_logic; -- shared serial interface clock input
+		O_ADC_CSA         : out   std_logic_vector(1 to 3); -- serial interfacechip select, channels 1, 4, 5 and 8
+		O_ADC_CSB         : out   std_logic_vector(1 to 3); -- serial interfacechip select, channels 2, 3, 6 and 7
 
 		-- NOT USED --
 		-- ADC LTC2173-14, 4 channel, ser out, 80 MSPS max., LVDS outputs
-		I_ADC_OUTA_4P : in std_logic_vector(0 to 3); -- LVDS, oserdes data outputs
-		I_ADC_OUTA_4N : in std_logic_vector(0 to 3);
-		I_ADC_FR_4P   : in std_logic;
-		I_ADC_FR_4N   : in std_logic;
-		I_ADC_DCO_4P  : in std_logic; -- Data Clock Outputs
-		I_ADC_DCO_4N  : in std_logic;
-		I_ADC_SDO_4   : in std_logic;  -- serial interface data readback output
-		O_ADC_ENC_4P  : out std_logic; -- LVDS, conversion clock, conversion starts at rising edge
-		O_ADC_ENC_4N  : out std_logic;
-		O_ADC_CS_4    : out std_logic; -- serial interfacechip select
+		I_ADC_OUTA_4P     : in    std_logic_vector(0 to 3); -- LVDS, oserdes data outputs
+		I_ADC_OUTA_4N     : in    std_logic_vector(0 to 3);
+		I_ADC_FR_4P       : in    std_logic;
+		I_ADC_FR_4N       : in    std_logic;
+		I_ADC_DCO_4P      : in    std_logic; -- Data Clock Outputs
+		I_ADC_DCO_4N      : in    std_logic;
+		I_ADC_SDO_4       : in    std_logic; -- serial interface data readback output
+		O_ADC_ENC_4P      : out   std_logic; -- LVDS, conversion clock, conversion starts at rising edge
+		O_ADC_ENC_4N      : out   std_logic;
+		O_ADC_CS_4        : out   std_logic; -- serial interfacechip select
 
 		-- Stamp9G45 1.8V signals
-		I_EBI1_ADDR  : in std_logic_vector(20 downto 0);    -- up to 21 memory bus address signals
-		IO_EBI1_D    : inout std_logic_vector(15 downto 0); -- memory bus data signals
-		I_EBI1_NWE   : in std_logic;                        --EBI1_NWE/NWR0/CFWE, low active write strobe
-		I_EBI1_NCS2  : in std_logic;                        --PC13/NCS2,             address (hex) 3000 0000, low active Chip Select 2
-		I_EBI1_NRD   : in std_logic;                        --EBI1_NRD/CFOE, low active read strobe
-		I_EBI1_MCK   : in std_logic; -- NOT USED            --PB31/ISI_MCK/PCK1, might be used as clock
-		O_EBI1_NWAIT : out std_logic;                       --PC15/NWAIT, low active
+		I_EBI1_ADDR       : in    std_logic_vector(20 downto 0); -- up to 21 memory bus address signals
+		IO_EBI1_D         : inout std_logic_vector(15 downto 0); -- memory bus data signals
+		I_EBI1_NWE        : in    std_logic; --EBI1_NWE/NWR0/CFWE, low active write strobe
+		I_EBI1_NCS2       : in    std_logic; --PC13/NCS2,             address (hex) 3000 0000, low active Chip Select 2
+		I_EBI1_NRD        : in    std_logic; --EBI1_NRD/CFOE, low active read strobe
+		I_EBI1_MCK        : in    std_logic; -- NOT USED            --PB31/ISI_MCK/PCK1, might be used as clock
+		O_EBI1_NWAIT      : out   std_logic; --PC15/NWAIT, low active
 		-- Stamp9G45 3.3V signals
-		O_PC1_ARM_IRQ0 : out std_logic;   -- PIO port PC1, used as edge (both) triggered interrupt signal
-		IO_ADDR_64BIT  : inout std_logic; -- NOT USED -- one wire serial EPROM DS2431P
+		O_PC1_ARM_IRQ0    : out   std_logic; -- PIO port PC1, used as edge (both) triggered interrupt signal
+		IO_ADDR_64BIT     : inout std_logic; -- NOT USED -- one wire serial EPROM DS2431P
 
 		-- DRS4 (Domino Ring Sampler) chips #1..3
-		I_DRS4_SROUT : in std_logic_vector(1 to 3); -- Multiplexed Shift Register Output
-		I_DRS4_DTAP   : in std_logic_vector(1 to 3); -- Domino Tap Signal Output toggling on each domino revolution
-		I_DRS4_PLLLCK : in std_logic_vector(1 to 3); -- PLL Lock Indicator Output
-		O_DRS4_RESETn : out std_logic_vector(1 to 3);     -- external Reset, leave open when using internal ..
-		O_DRS4_A      : out std_logic_vector(3 downto 0); -- shared address bits
-		O_DRS4_SRIN   : out std_logic_vector(1 to 3);     -- Shared Shift Register Input
-		O_DRS4_SRCLK  : out std_logic_vector(1 to 3);     -- Multiplexed Shift Register Clock Input
-		O_DRS4_RSLOAD : out std_logic_vector(1 to 3);     -- Read Shift Register Load Input
-		O_DRS4_DWRITE : out std_logic_vector(1 to 3);     -- Domino Write Input. Connects the Domino Wave Circuit to the
-		O_DRS4_DENABLE : out std_logic_vector(1 to 3); -- Domino Enable Input. A low-to-high transition starts the Domino
-		O_DRS4_REFCLK_P : out std_logic_vector(1 to 3); -- Reference Clock Input LVDS (+)
-		O_DRS4_REFCLK_N : out std_logic_vector(1 to 3); -- Reference Clock Input LVDS (-)
+		I_DRS4_SROUT      : in    std_logic_vector(1 to 3); -- Multiplexed Shift Register Output
+		I_DRS4_DTAP       : in    std_logic_vector(1 to 3); -- Domino Tap Signal Output toggling on each domino revolution
+		I_DRS4_PLLLCK     : in    std_logic_vector(1 to 3); -- PLL Lock Indicator Output
+		O_DRS4_RESETn     : out   std_logic_vector(1 to 3); -- external Reset, leave open when using internal ..
+		O_DRS4_A          : out   std_logic_vector(3 downto 0); -- shared address bits
+		O_DRS4_SRIN       : out   std_logic_vector(1 to 3); -- Shared Shift Register Input
+		O_DRS4_SRCLK      : out   std_logic_vector(1 to 3); -- Multiplexed Shift Register Clock Input
+		O_DRS4_RSLOAD     : out   std_logic_vector(1 to 3); -- Read Shift Register Load Input
+		O_DRS4_DWRITE     : out   std_logic_vector(1 to 3); -- Domino Write Input. Connects the Domino Wave Circuit to the
+		O_DRS4_DENABLE    : out   std_logic_vector(1 to 3); -- Domino Enable Input. A low-to-high transition starts the Domino
+		O_DRS4_REFCLK_P   : out   std_logic_vector(1 to 3); -- Reference Clock Input LVDS (+)
+		O_DRS4_REFCLK_N   : out   std_logic_vector(1 to 3); -- Reference Clock Input LVDS (-)
 
 		-- serial DAC to set the Discriminator thresholds
-		O_DAC_DIN   : out std_logic_vector(1 to 3); -- 2.5V CMOS, serial DAC (discr. threshold)
-		O_DAC_SCLK  : out std_logic_vector(1 to 3); -- 2.5V CMOS
-		O_DAC_SYNCn : out std_logic_vector(1 to 3); -- 2.5V CMOS, low active
+		O_DAC_DIN         : out   std_logic_vector(1 to 3); -- 2.5V CMOS, serial DAC (discr. threshold)
+		O_DAC_SCLK        : out   std_logic_vector(1 to 3); -- 2.5V CMOS
+		O_DAC_SYNCn       : out   std_logic_vector(1 to 3); -- 2.5V CMOS, low active
 
 		-- paddle #1..3 control
-		IO_I2C_CLK     : inout std_logic_vector(1 to 3); -- NOT USED -- I2C clock
-		IO_I2C_DATA    : inout std_logic_vector(1 to 3); -- NOT USED -- SN65HVD1782D, bidirectional data
-		I_CBL_PLGDn   : in std_logic_vector(1 to 3);        -- cable plugged, low active, needs pullup activated
-		O_PON_PADDLEn : out std_logic_vector(1 to 3);       -- Paddle power on signal
-		O_POW_SW_SCL  : out std_logic;                      -- paddle power switch monitoring ADC control
-		O_POW_SW_SDA  : out std_logic;                      -- paddle power switch monitoring ADC control
-		I_POW_ALERT   : in std_logic;                       -- ADC AD7997 open drain output, needs pullup,
+		IO_I2C_CLK        : inout std_logic_vector(1 to 3); -- NOT USED -- I2C clock
+		IO_I2C_DATA       : inout std_logic_vector(1 to 3); -- NOT USED -- SN65HVD1782D, bidirectional data
+		I_CBL_PLGDn       : in    std_logic_vector(1 to 3); -- cable plugged, low active, needs pullup activated
+		O_PON_PADDLEn     : out   std_logic_vector(1 to 3); -- Paddle power on signal
+		O_POW_SW_SCL      : out   std_logic; -- paddle power switch monitoring ADC control
+		O_POW_SW_SDA      : out   std_logic; -- paddle power switch monitoring ADC control
+		I_POW_ALERT       : in    std_logic; -- ADC AD7997 open drain output, needs pullup,
 
 		-- RS232 / RS485 ports, BOTH NOT USED
-		O_RS232_TXD : out std_logic; -- 3.3V CMOS
-		I_RS232_RXD : in std_logic;  -- 3.3V CMOS
+		O_RS232_TXD       : out   std_logic; -- 3.3V CMOS
+		I_RS232_RXD       : in    std_logic; -- 3.3V CMOS
 
-		O_RS485_PV  : out std_logic; -- 3.3V CMOS power valid
-		O_RS485_DE  : out std_logic; -- 3.3V CMOS
-		O_RS485_REn : out std_logic; -- 3.3V CMOS
-		O_RS485_TXD : out std_logic; -- 3.3V CMOS
-		I_RS485_RXD : in std_logic;  -- 3.3V CMOS
+		O_RS485_PV        : out   std_logic; -- 3.3V CMOS power valid
+		O_RS485_DE        : out   std_logic; -- 3.3V CMOS
+		O_RS485_REn       : out   std_logic; -- 3.3V CMOS
+		O_RS485_TXD       : out   std_logic; -- 3.3V CMOS
+		I_RS485_RXD       : in    std_logic; -- 3.3V CMOS
 
 		-- GPS module LEA-6T ?? check wether this is really 3.3V ..
-		O_GPS_RESET_N    : out std_logic; -- 3.3V CMOS, GPS-module reset
-		O_GPS_EXTINT0    : out std_logic; -- 3.3V CMOS, interrupt signal for time stamping an event
-		I_GPS_TIMEPULSE  : in std_logic;  -- 3.3V CMOS, typical used as PPS pulse
-		I_GPS_TIMEPULSE2 : in std_logic;  -- 3.3V CMOS, configurable, clock from 0.25 Hz to 10 MHz
-		O_GPS_RXD1       : out std_logic; -- 3.3V CMOS,
-		I_GPS_TXD1       : in std_logic;  -- 3.3V CMOS,
+		O_GPS_RESET_N     : out   std_logic; -- 3.3V CMOS, GPS-module reset
+		O_GPS_EXTINT0     : out   std_logic; -- 3.3V CMOS, interrupt signal for time stamping an event
+		I_GPS_TIMEPULSE   : in    std_logic; -- 3.3V CMOS, typical used as PPS pulse
+		I_GPS_TIMEPULSE2  : in    std_logic; -- 3.3V CMOS, configurable, clock from 0.25 Hz to 10 MHz
+		O_GPS_RXD1        : out   std_logic; -- 3.3V CMOS,
+		I_GPS_TXD1        : in    std_logic; -- 3.3V CMOS,
 
 		-- test signals DACs
-		IO_TEST_DAC_SCL : inout std_logic;              -- 2.5V CMOS, DAC for test pulse (chain saw) generation
-		IO_TEST_DAC_SDA : inout std_logic;              -- 2.5V CMOS,
-		O_TEST_GATE    : out std_logic_vector(1 to 3); -- 2.5V CMOS, to discharge the capacitor used for the chain saw signal
-		O_TEST_PDn     : out std_logic;                -- 2.5V CMOS, to power down the test circuitry
+		IO_TEST_DAC_SCL   : inout std_logic; -- 2.5V CMOS, DAC for test pulse (chain saw) generation
+		IO_TEST_DAC_SDA   : inout std_logic; -- 2.5V CMOS,
+		O_TEST_GATE       : out   std_logic_vector(1 to 3); -- 2.5V CMOS, to discharge the capacitor used for the chain saw signal
+		O_TEST_PDn        : out   std_logic; -- 2.5V CMOS, to power down the test circuitry
 
-		IO_TEMPERATURE : inout std_logic; -- bidir, tmp05 sensor
+		IO_TEMPERATURE    : inout std_logic; -- bidir, tmp05 sensor
 
-		IO_sda : inout std_logic;
-		IO_scl : inout std_logic;
+		IO_sda            : inout std_logic;
+		IO_scl            : inout std_logic;
 		-- test signals, NOT AVAILABLE for XC6SLX100FGG484-2 !!!
-		IO_LVDS_IO_P : inout std_logic_vector(5 downto 0); -- LVDS bidir. test port
-		IO_LVDS_IO_N : inout std_logic_vector(5 downto 0); -- LVDS bidir. test port
-		O_NOT_USED_GND : out std_logic_vector(3 downto 0)
+		IO_LVDS_IO_P      : out std_logic_vector(5 downto 0); -- LVDS bidir. test port
+		IO_LVDS_IO_N      : out std_logic_vector(5 downto 0); -- LVDS bidir. test port
+		O_NOT_USED_GND    : out   std_logic_vector(3 downto 0)
 	);
 end icescint_io;
 
@@ -166,25 +162,22 @@ architecture behaviour of icescint_io is
 	signal clk_10m_wr   : std_logic;
 	signal clk_10m_gps  : std_logic;
 	signal clk_platform : std_logic;
-	
+
 	signal rst_ext_async : std_logic;
 	signal rst_10m_osc   : std_logic;
 	signal rst_platform  : std_logic;
-
-	signal plat_clock_detect_wr  : std_logic;
-	signal plat_clock_detect_gps : std_logic;
-	signal plat_reg_clock_detect : register_t := x"0000";
 
 	signal plat_dcm_locked : std_logic;
 	signal plat_rst_input  : std_logic;
 
 	signal plat_ebi_data_out : std_logic_vector(15 downto 0);
-	signal plat_ebi_addr     : std_logic_vector(15 downto 0);
-	
+
 	signal plat_ebi_read_async  : std_logic;
 	signal plat_ebi_write_async : std_logic;
-	signal plat_ebi_read  : std_logic;
-	signal plat_ebi_write : std_logic;
+	signal plat_ebi_read        : std_logic;
+	signal plat_ebi_write       : std_logic;
+	signal plat_user2regs       : user2regs_io_t;
+	signal plat_regs2user       : regs2user_io_t;
 
 	----------------------------------------------------------------------------
 	-- LEGACY BELOW
@@ -212,42 +205,51 @@ architecture behaviour of icescint_io is
 	signal radio_dac_do        : std_logic;
 	signal radio_dac_sck       : std_logic;
 	signal radio_power24n      : std_logic;
-	
+
 	-- TODO: rename and clean up
 	signal ebi_data_out_muxed : register_t;
 
 	signal ebi_address  : std_logic_vector(23 downto 0);
 	signal ebi_data_in  : std_logic_vector(15 downto 0);
 	signal ebi_data_out : std_logic_vector(15 downto 0);
-	signal ebi_read  : std_logic;
-	signal ebi_write : std_logic;
-	signal ebi_select : std_logic;
+	signal ebi_read     : std_logic;
+	signal ebi_write    : std_logic;
+	signal ebi_select   : std_logic;
 
-	signal panel_24v_on_n  : std_logic_vector(0 to 7);
-	signal panel_24v_tri : std_logic_vector(0 to 7);
+	signal panel_24v_on_n : std_logic_vector(0 to 7);
+	signal panel_24v_tri  : std_logic_vector(0 to 7);
 
 	signal sclint : std_logic;
 	signal sdaout : std_logic;
 	signal sdaint : std_logic;
 
 	signal wr_clock : std_logic;
-	signal wr_pps : std_logic;
+	signal wr_pps   : std_logic;
 begin
-    
-    ----------------------------------------------------------------------------
-    -- Clocks and Resets
-    ----------------------------------------------------------------------------
+
+	IO_LVDS_IO_N(5 downto 2) <= x"f";
+	IO_LVDS_IO_P(5)          <= I_EBI1_MCK;
+	IO_LVDS_IO_P(4)          <= ebi_address(0);
+	IO_LVDS_IO_P(3)          <= ebi_data_in(0);
+	IO_LVDS_IO_P(2)          <= I_EBI1_NRD;
+	-- LEDs, must be assigned so bitgen does not fail
+	IO_LVDS_IO_P(1 downto 0)          <= "00";
+	IO_LVDS_IO_N(1 downto 0)          <= "00";
+
+	----------------------------------------------------------------------------
+	-- Clocks and Resets
+	----------------------------------------------------------------------------
 
 	-- 10 MHz Oscillator -------------------------------------------------------
 
 	bufg_10m_osc : BUFG
-		port map (
+		port map(
 			O => clk_10m_osc,
 			I => I_QOSC2_OUT
 		);
-	
+
 	rst_ext_async <= not I_PON_RESETn;
-	
+
 	rst_sync_10m_osc : entity work.reset_synchronizer
 		generic map(
 			G_RELEASE_DELAY_CYCLES => 5
@@ -261,7 +263,7 @@ begin
 	-- 10 MHz White Rabbit -----------------------------------------------------
 
 	bufg_10m_wr : BUFG
-		port map (
+		port map(
 			O => clk_10m_wr,
 			I => wr_clock
 		);
@@ -269,7 +271,7 @@ begin
 	-- 10 MHz GPS --------------------------------------------------------------
 
 	bufg_10m_gps : BUFG
-		port map (
+		port map(
 			O => clk_10m_gps,
 			I => I_GPS_TIMEPULSE2
 		);
@@ -277,24 +279,24 @@ begin
 	-- Platform Clock
 
 	DCM_CLKGEN_inst : DCM_CLKGEN
-		generic map (
-			CLKFXDV_DIVIDE => 2,       -- CLKFXDV divide value (2, 4, 8, 16, 32)
-			CLKFX_DIVIDE => 1,         -- Divide value - D - (1-256)
-			CLKFX_MD_MAX => 12.0,      -- Specify maximum M/D ratio for timing anlysis
-			CLKFX_MULTIPLY => 24,      -- Multiply value - M - (2-256)
-			CLKIN_PERIOD => 0.0,       -- Input clock period specified in nS
-			SPREAD_SPECTRUM => "NONE", -- Spread Spectrum mode "NONE", "CENTER_LOW_SPREAD", "CENTER_HIGH_SPREAD", "VIDEO_LINK_M0", "VIDEO_LINK_M1" or "VIDEO_LINK_M2" 
-			STARTUP_WAIT => FALSE      -- Delay config DONE until DCM_CLKGEN LOCKED (TRUE/FALSE)
+		generic map(
+			CLKFXDV_DIVIDE  => 2,       -- CLKFXDV divide value (2, 4, 8, 16, 32)
+			CLKFX_DIVIDE    => 1,       -- Divide value - D - (1-256)
+			CLKFX_MD_MAX    => 12.0,    -- Specify maximum M/D ratio for timing anlysis
+			CLKFX_MULTIPLY  => 24,      -- Multiply value - M - (2-256)
+			CLKIN_PERIOD    => 0.0,     -- Input clock period specified in nS
+			SPREAD_SPECTRUM => "NONE",  -- Spread Spectrum mode "NONE", "CENTER_LOW_SPREAD", "CENTER_HIGH_SPREAD", "VIDEO_LINK_M0", "VIDEO_LINK_M1" or "VIDEO_LINK_M2" 
+			STARTUP_WAIT    => FALSE    -- Delay config DONE until DCM_CLKGEN LOCKED (TRUE/FALSE)
 		)
-		port map (
-			CLKFX => clk_platform,         -- 1-bit output: Generated clock output
-			LOCKED => plat_dcm_locked, -- 1-bit output: Locked output
-			CLKIN => clk_10m_osc,          -- 1-bit input: Input clock
-			FREEZEDCM => '0',              -- 1-bit input: Prevents frequency adjustments to input clock
-			PROGCLK => '0',                -- 1-bit input: Clock input for M/D reconfiguration
-			PROGDATA => '0',               -- 1-bit input: Serial data input for M/D reconfiguration
-			PROGEN => '0',                 -- 1-bit input: Active high program enable
-			RST => rst_10m_osc             -- 1-bit input: Reset input pin
+		port map(
+			CLKFX     => clk_platform,  -- 1-bit output: Generated clock output
+			LOCKED    => plat_dcm_locked, -- 1-bit output: Locked output
+			CLKIN     => clk_10m_osc,   -- 1-bit input: Input clock
+			FREEZEDCM => '0',           -- 1-bit input: Prevents frequency adjustments to input clock
+			PROGCLK   => '0',           -- 1-bit input: Clock input for M/D reconfiguration
+			PROGDATA  => '0',           -- 1-bit input: Serial data input for M/D reconfiguration
+			PROGEN    => '0',           -- 1-bit input: Active high program enable
+			RST       => rst_10m_osc    -- 1-bit input: Reset input pin
 		);
 
 	plat_rst_input <= rst_10m_osc or (not plat_dcm_locked);
@@ -308,7 +310,7 @@ begin
 			i_clk   => clk_platform,
 			o_reset => rst_platform
 		);
-    
+
 	----------------------------------------------------------------------------
 	-- Clock Detectors
 	----------------------------------------------------------------------------
@@ -323,7 +325,7 @@ begin
 			i_clk    => clk_platform,
 			i_rst    => rst_platform,
 			i_detect => clk_10m_wr,
-			o_stable => plat_clock_detect_wr
+			o_stable => plat_user2regs.clk_detect_wr
 		);
 
 	clock_detector_gps : entity work.clock_detector
@@ -336,16 +338,16 @@ begin
 			i_clk    => clk_platform,
 			i_rst    => rst_platform,
 			i_detect => clk_10m_gps,
-			o_stable => plat_clock_detect_gps
+			o_stable => plat_user2regs.clk_detect_gps
 		);
 
 	----------------------------------------------------------------------------
 	-- Platform Register Read
 	----------------------------------------------------------------------------
-	
-	plat_ebi_read_async <= (not I_EBI1_NCS2) and (not I_EBI1_NRD);
-	plat_ebi_write_async <= (not I_EBI1_NCS2) and (not I_EBI1_NWE);
-	
+
+	plat_ebi_read_async  <= (not I_EBI1_NCS2) and (not I_EBI1_NRD) and ebi_address(16);
+	plat_ebi_write_async <= (not I_EBI1_NCS2) and (not I_EBI1_NWE) and ebi_address(16);
+
 	sync_plat_ebi_read : entity work.synchronizer
 		generic map(
 			G_INIT_VALUE    => '0',
@@ -357,7 +359,7 @@ begin
 			i_data  => plat_ebi_read_async,
 			o_data  => plat_ebi_read
 		);
-	
+
 	sync_plat_ebi_write : entity work.synchronizer
 		generic map(
 			G_INIT_VALUE    => '0',
@@ -369,51 +371,34 @@ begin
 			i_data  => plat_ebi_write_async,
 			o_data  => plat_ebi_write
 		);
-	
-	-- update read register values when not reading
-	p_register_read : process(clk_platform)
-	begin
-		if rising_edge(clk_platform) then
-			if rst_platform = '1' then
-				plat_reg_clock_detect <= x"0000";
-			else
-				if plat_ebi_read = '0' then
-					plat_reg_clock_detect <= (
-						0 => plat_clock_detect_wr,
-						1 => plat_clock_detect_gps,
-						others => '0'
-					);
-				end if;
-			end if;
-		end if;
-	end process;
-	
-	plat_ebi_addr <= ebi_address(15 downto 0);
 
-	with plat_ebi_addr select plat_ebi_data_out <=
-		plat_reg_clock_detect when x"0000",
-		(
-			0 => rst_platform,
-			1 => rst_10m_osc,
-			2 => plat_dcm_locked,
-			others => '0'
-		) when x"0002",
-		x"dead" when others;
+	registers_io : entity work.registers_io
+		port map(
+			i_clk       => clk_platform,
+			i_rst       => rst_platform,
+			i_read      => plat_ebi_read,
+			i_write     => plat_ebi_write,
+			i_ebi_addr  => ebi_address(15 downto 0),
+			i_ebi_data  => ebi_data_in,
+			o_ebi_data  => plat_ebi_data_out,
+			i_user2regs => plat_user2regs,
+			o_regs2user => plat_regs2user
+		);
 
 	----------------------------------------------------------------------------
 	-- IO buffers
 	----------------------------------------------------------------------------
 
 	-- RADIO
-	O_DRS4_A <= radio_drs4_address;
+	O_DRS4_A            <= radio_drs4_address;
 	radio_adc_data_p(0) <= I_ADC_OUTA_1P;
 	radio_adc_data_n(0) <= I_ADC_OUTA_1N;
 	radio_adc_data_p(1) <= I_ADC_OUTA_2P;
 	radio_adc_data_n(1) <= I_ADC_OUTA_2N;
 	radio_adc_data_p(2) <= I_ADC_OUTA_3P;
 	radio_adc_data_n(2) <= I_ADC_OUTA_3N;
-	O_ADC_SDI <= radio_adc_sdi;
-	O_ADC_SCK <= radio_adc_sck;
+	O_ADC_SDI           <= radio_adc_sdi;
+	O_ADC_SCK           <= radio_adc_sck;
 	gen_radio : for i in 1 to 3 generate
 		-- one to many
 		O_DRS4_RESETn(i)  <= radio_drs4_resetn;
@@ -429,180 +414,207 @@ begin
 		O_DAC_SCLK(i)     <= radio_dac_sck;
 		O_PON_PADDLEn(i)  <= radio_power24n;
 
-		obuf_drs4_refclock : OBUFDS port map(
-			O => O_DRS4_REFCLK_P(i),
-			OB => O_DRS4_REFCLK_N(i),
-			I => radio_drs4_refclock
-		);
+		obuf_drs4_refclock : OBUFDS
+			port map(
+				O  => O_DRS4_REFCLK_P(i),
+				OB => O_DRS4_REFCLK_N(i),
+				I  => radio_drs4_refclock
+			);
 
-		obuf_adc_refclock : OBUFDS port map(
-			O => O_ADC_ENC_P(i),
-			OB => O_ADC_ENC_N(i),
-			I => radio_adc_refclk
-		);
+		obuf_adc_refclock : OBUFDS
+			port map(
+				O  => O_ADC_ENC_P(i),
+				OB => O_ADC_ENC_N(i),
+				I  => radio_adc_refclk
+			);
 
 		-- remap 1-3 to 0-2
-		radio_drs4_dtap(i - 1) <= I_DRS4_DTAP(i);
+		radio_drs4_dtap(i - 1)    <= I_DRS4_DTAP(i);
 		radio_drs4_plllock(i - 1) <= I_DRS4_PLLLCK(i);
-		radio_drs4_srout(i - 1) <= I_DRS4_SROUT(i);
+		radio_drs4_srout(i - 1)   <= I_DRS4_SROUT(i);
 
 		-- termination for unused pins
-		ibufds_adc_fra : IBUFDS generic map(
-			DIFF_TERM => true
-		) port map(
-			I => I_ADC_FRA_P(i),
-			IB => I_ADC_FRA_N(i),
-			O => open
-		);
+		ibufds_adc_fra : IBUFDS
+			generic map(
+				DIFF_TERM => true
+			)
+			port map(
+				I  => I_ADC_FRA_P(i),
+				IB => I_ADC_FRA_N(i),
+				O  => open
+			);
 
-		ibufds_adc_frb : IBUFDS generic map(
-			DIFF_TERM => true
-		) port map(
-			I => I_ADC_FRB_P(i),
-			IB => I_ADC_FRB_N(i),
-			O => open
-		);
+		ibufds_adc_frb : IBUFDS
+			generic map(
+				DIFF_TERM => true
+			)
+			port map(
+				I  => I_ADC_FRB_P(i),
+				IB => I_ADC_FRB_N(i),
+				O  => open
+			);
 
-		ibufds_adc_dcoa : IBUFDS generic map(
-			DIFF_TERM => true
-		) port map(
-			O => open,
-			I => I_ADC_DCOA_P(i),
-			IB => I_ADC_DCOA_N(i)
-		);
+		ibufds_adc_dcoa : IBUFDS
+			generic map(
+				DIFF_TERM => true
+			)
+			port map(
+				O  => open,
+				I  => I_ADC_DCOA_P(i),
+				IB => I_ADC_DCOA_N(i)
+			);
 
-		ibufds_adc_dcob : IBUFDS generic map(
-			DIFF_TERM => true
-		) port map(
-			I => I_ADC_DCOB_P(i),
-			IB => I_ADC_DCOB_N(i),
-			O => open
-		);
+		ibufds_adc_dcob : IBUFDS
+			generic map(
+				DIFF_TERM => true
+			)
+			port map(
+				I  => I_ADC_DCOB_P(i),
+				IB => I_ADC_DCOB_N(i),
+				O  => open
+			);
 	end generate;
 
 	-- EBI
-	ebi_read   <= not I_EBI1_NRD;
-	ebi_write  <= not I_EBI1_NWE;
-	ebi_select <= not I_EBI1_NCS2;
-	ebi_address <= "000" & I_EBI1_ADDR;
+	ebi_read     <= not I_EBI1_NRD;
+	ebi_write    <= not I_EBI1_NWE;
+	ebi_select   <= not I_EBI1_NCS2;
+	ebi_address  <= "000" & I_EBI1_ADDR;
 	O_EBI1_NWAIT <= '1';
-	
+
 	ebi_data_out_muxed <= ebi_data_out when I_EBI1_ADDR(16) = '0' else plat_ebi_data_out;
-	
+
 	gen_ebi_data : for i in 0 to 15 generate
-		iobuf_inst : IOBUF generic map(
-			DRIVE => 2,
-			IBUF_DELAY_VALUE => "0",
-			IFD_DELAY_VALUE => "AUTO",
-			IOSTANDARD => "DEFAULT",
-			SLEW => "SLOW"
-		)
-		port map(
-			IO => IO_EBI1_D(i),
-			O  => ebi_data_in(i),
-			I  => ebi_data_out_muxed(i), 
-			T  => I_EBI1_NRD
-		);
+		iobuf_inst : IOBUF
+			generic map(
+				DRIVE            => 2,
+				IBUF_DELAY_VALUE => "0",
+				IFD_DELAY_VALUE  => "AUTO",
+				IOSTANDARD       => "DEFAULT",
+				SLEW             => "SLOW"
+			)
+			port map(
+				IO => IO_EBI1_D(i),
+				O  => ebi_data_in(i),
+				I  => ebi_data_out_muxed(i),
+				T  => I_EBI1_NRD
+			);
 	end generate;
 
 	-- SCINTILLATOR PANELS
 	gen_scint_panels : for i in 0 to 7 generate
-		obuft_power : OBUFT port map(
-			O => O_PANEL_NP24V_ON(i),
-			I => panel_24v_on_n(i),
-			T => panel_24v_tri(i)
-		);
+		obuft_power : OBUFT
+			port map(
+				O => O_PANEL_NP24V_ON(i),
+				I => panel_24v_on_n(i),
+				T => panel_24v_tri(i)
+			);
 	end generate;
 
 	-- GROUND
 	O_NOT_USED_GND <= (others => '0');
-	
+
 	-- WHITE RABBIT
-	ibufds_wr_clk : IBUFDS generic map(DIFF_TERM => true) port map(
-		I => I_EXT_CLK_P,
-		IB => I_EXT_CLK_N,
-		O => wr_clock
-	);
-	ibufds_wr_pps : IBUFDS generic map(DIFF_TERM => true) port map(
-		I => I_EXT_PPS_P,
-		IB => I_EXT_PPS_N,
-		O => wr_pps
-	);
+	ibufds_wr_clk : IBUFDS
+		generic map(DIFF_TERM => true)
+		port map(
+			I  => I_EXT_CLK_P,
+			IB => I_EXT_CLK_N,
+			O  => wr_clock
+		);
+	ibufds_wr_pps : IBUFDS
+		generic map(DIFF_TERM => true)
+		port map(
+			I  => I_EXT_PPS_P,
+			IB => I_EXT_PPS_N,
+			O  => wr_pps
+		);
 
 	-- AUX ADC, unused
 	O_ADC_CS_4 <= '1';
 
 	gen_aux_adc : for i in 0 to 3 generate
-		ibufds_out_term : IBUFDS generic map(
-			DIFF_TERM => true
-		) port map(
-			I => I_ADC_OUTA_4P(i),
-			IB => I_ADC_OUTA_4N(i),
-			O => open
-		);
+		ibufds_out_term : IBUFDS
+			generic map(
+				DIFF_TERM => true
+			)
+			port map(
+				I  => I_ADC_OUTA_4P(i),
+				IB => I_ADC_OUTA_4N(i),
+				O  => open
+			);
 	end generate;
 
-	gen_aux_adc_fr : IBUFDS generic map(
-		DIFF_TERM => true
-	) port map(
-		I => I_ADC_FR_4P,
-		IB => I_ADC_FR_4N,
-		O => open
-	);
+	gen_aux_adc_fr : IBUFDS
+		generic map(
+			DIFF_TERM => true
+		)
+		port map(
+			I  => I_ADC_FR_4P,
+			IB => I_ADC_FR_4N,
+			O  => open
+		);
 
-	gen_aux_adc_dco : IBUFDS generic map(
-		DIFF_TERM => true
-	) port map(
-		I => I_ADC_DCO_4P,
-		IB => I_ADC_DCO_4N,
-		O => open
-	);
-	
-	obufds_aux_adc_enc : OBUFDS port map(
-		O => O_ADC_ENC_4P,
-		OB => O_ADC_ENC_4N,
-		I => '0'
-	);
+	gen_aux_adc_dco : IBUFDS
+		generic map(
+			DIFF_TERM => true
+		)
+		port map(
+			I  => I_ADC_DCO_4P,
+			IB => I_ADC_DCO_4N,
+			O  => open
+		);
+
+	obufds_aux_adc_enc : OBUFDS
+		port map(
+			O  => O_ADC_ENC_4P,
+			OB => O_ADC_ENC_4N,
+			I  => '0'
+		);
 
 	-- MISC
-	O_QOSC2_ENA    <= '0'; -- QOSC2 has no enable input
-	O_ADC_PAR_SERn <= '0'; -- unconnected according to schematic
+	O_QOSC2_ENA    <= '0';              -- QOSC2 has no enable input
+	O_ADC_PAR_SERn <= '0';              -- unconnected according to schematic
 
-	ibufds_ext_trig_in : IBUFDS generic map(
-		DIFF_TERM => true
-	) port map(
-		I => I_EXT_TRIG_IN_P,
-		IB => I_EXT_TRIG_IN_N,
-		O => open
-	);
+	ibufds_ext_trig_in : IBUFDS
+		generic map(
+			DIFF_TERM => true
+		)
+		port map(
+			I  => I_EXT_TRIG_IN_P,
+			IB => I_EXT_TRIG_IN_N,
+			O  => open
+		);
 
-	obufds_ext_trig_out : OBUFDS port map(
-		O => O_EXT_TRIG_OUT_P,
-		OB => O_EXT_TRIG_OUT_N,
-		I => '0'
-	);
+	obufds_ext_trig_out : OBUFDS
+		port map(
+			O  => O_EXT_TRIG_OUT_P,
+			OB => O_EXT_TRIG_OUT_N,
+			I  => '0'
+		);
 
-	obufds_area_trig : OBUFDS port map(
-		O => O_AERA_TRIG_P,
-		OB => O_AERA_TRIG_N,
-		I => '0'
-	);
+	obufds_area_trig : OBUFDS
+		port map(
+			O  => O_AERA_TRIG_P,
+			OB => O_AERA_TRIG_N,
+			I  => '0'
+		);
 
 	O_POW_SW_SCL <= '1';
 	O_POW_SW_SDA <= '1';
 
 	O_RS232_TXD <= '1';
-	O_RS485_PV <= '0';
-	O_RS485_DE <= '0';
+	O_RS485_PV  <= '0';
+	O_RS485_DE  <= '0';
 	O_RS485_REn <= '0';
 	O_RS485_TXD <= '0';
 
 	O_GPS_RESET_N <= '1';
 	O_GPS_EXTINT0 <= '0';
-	O_GPS_RXD1 <= '1';
+	O_GPS_RXD1    <= '1';
 
 	O_TEST_GATE <= (others => '0');
-	O_TEST_PDn <= '0';
+	O_TEST_PDn  <= '0';
 
 	--	sda <= '0' when sdaout = '0' else 'Z';
 	--	sdaint <= sda; 
@@ -611,77 +623,67 @@ begin
 	IO_scl          <= sclint;
 	IO_TEST_DAC_SCL <= sclint;
 	--sdaout
-	IO_sda <= '0' when sdaout = '0' else
-		'Z';
-	IO_TEST_DAC_SDA <= '0' when sdaout = '0' else
-		'Z';
+	IO_sda          <= '0' when sdaout = '0' else 'Z';
+	IO_TEST_DAC_SDA <= '0' when sdaout = '0' else 'Z';
 	-- sda in:
-	sdaint <= IO_sda and IO_TEST_DAC_SDA;
+	sdaint          <= IO_sda and IO_TEST_DAC_SDA;
 
 	----------------------------------------------------------------------------
 	-- toplevel
 	----------------------------------------------------------------------------
 
-	icescint_inst : entity work.icescint port map (
-		i_clk_10m => wr_clock,
-		i_rst_ext => "not"(I_PON_RESETn),
-
-		o_radio_drs4_resetn   => radio_drs4_resetn,
-		o_radio_drs4_refclock => radio_drs4_refclock,
-		i_radio_drs4_plllock  => radio_drs4_plllock,
-		o_radio_drs4_denable  => radio_drs4_denable,
-		o_radio_drs4_dwrite   => radio_drs4_dwrite,
-		o_radio_drs4_rsrload  => radio_drs4_rsrload,
-		o_radio_drs4_address  => radio_drs4_address,
-		i_radio_drs4_dtap     => radio_drs4_dtap,
-		i_radio_drs4_srout    => radio_drs4_srout,
-		o_radio_drs4_srin     => radio_drs4_srin,
-		o_radio_drs4_srclk    => radio_drs4_srclk,
-		i_radio_adc_data_p    => radio_adc_data_p,
-		i_radio_adc_data_n    => radio_adc_data_n,
-		o_radio_adc_csan      => radio_adc_csan,
-		o_radio_adc_csbn      => radio_adc_csbn,
-		o_radio_adc_sdi       => radio_adc_sdi,
-		o_radio_adc_sck       => radio_adc_sck,
-		o_radio_adc_refclk    => radio_adc_refclk,
-		-- DAC for radio thresholds and offset
-		o_radio_dac_syncn => radio_dac_syncn,
-		o_radio_dac_do    => radio_dac_do,
-		o_radio_dac_sck   => radio_dac_sck,
-		o_radio_power24n  => radio_power24n,
-		
-		i_ebi_select   => ebi_select,
-		i_ebi_write    => ebi_write,
-		i_ebi_read     => ebi_read,
-		i_ebi_address  => ebi_address,
-		i_ebi_data_in  => ebi_data_in,
-		o_ebi_data_out => ebi_data_out,
-		o_ebi_irq      => O_PC1_ARM_IRQ0,
-
-		i_gps_pps     => I_GPS_TIMEPULSE,
-		i_gps_uart_in => I_GPS_TXD1,
-
-		i_wr_clock => wr_clock,
-		i_wr_pps   => wr_pps,
-
-		i_panel_trigger   => I_PANEL_TRIGGER,
-		o_panel_24v_on_n  => panel_24v_on_n,
-		o_panel_24v_tri   => panel_24v_tri,
-		o_panel_rs485_in  => I_PANEL_RS485_RX,
-		o_panel_rs485_out => O_PANEL_RS485_TX,
-		o_panel_rs485_en  => O_PANEL_RS485_DE,
-
-		io_pin_tmp05 => IO_TEMPERATURE,
-
-		o_vcxo_25_syncn => O_QOSC1_DAC_SYNCn,
-		o_vcxo_10_syncn => O_QOSC2_DAC_SYNCn,
-		o_vcxo_25_do    => O_QOSC2_DAC_SDIN,
-		o_vcxo_25_sck   => O_QOSC2_DAC_SCKL,
-
-		o_scl     => sclint,
-		o_sda_out => sdaout,
-		i_sda_in  => sdaint,
-
-		ignore => open
-	);
+	icescint_inst : entity work.icescint
+		port map(
+			i_clk_10m             => wr_clock,
+			i_rst_ext             => "not"(I_PON_RESETn),
+			o_radio_drs4_resetn   => radio_drs4_resetn,
+			o_radio_drs4_refclock => radio_drs4_refclock,
+			i_radio_drs4_plllock  => radio_drs4_plllock,
+			o_radio_drs4_denable  => radio_drs4_denable,
+			o_radio_drs4_dwrite   => radio_drs4_dwrite,
+			o_radio_drs4_rsrload  => radio_drs4_rsrload,
+			o_radio_drs4_address  => radio_drs4_address,
+			i_radio_drs4_dtap     => radio_drs4_dtap,
+			i_radio_drs4_srout    => radio_drs4_srout,
+			o_radio_drs4_srin     => radio_drs4_srin,
+			o_radio_drs4_srclk    => radio_drs4_srclk,
+			i_radio_adc_data_p    => radio_adc_data_p,
+			i_radio_adc_data_n    => radio_adc_data_n,
+			o_radio_adc_csan      => radio_adc_csan,
+			o_radio_adc_csbn      => radio_adc_csbn,
+			o_radio_adc_sdi       => radio_adc_sdi,
+			o_radio_adc_sck       => radio_adc_sck,
+			o_radio_adc_refclk    => radio_adc_refclk,
+			-- DAC for radio thresholds and offset
+			o_radio_dac_syncn     => radio_dac_syncn,
+			o_radio_dac_do        => radio_dac_do,
+			o_radio_dac_sck       => radio_dac_sck,
+			o_radio_power24n      => radio_power24n,
+			i_ebi_select          => ebi_select,
+			i_ebi_write           => ebi_write,
+			i_ebi_read            => ebi_read,
+			i_ebi_address         => ebi_address,
+			i_ebi_data_in         => ebi_data_in,
+			o_ebi_data_out        => ebi_data_out,
+			o_ebi_irq             => O_PC1_ARM_IRQ0,
+			i_gps_pps             => I_GPS_TIMEPULSE,
+			i_gps_uart_in         => I_GPS_TXD1,
+			i_wr_clock            => wr_clock,
+			i_wr_pps              => wr_pps,
+			i_panel_trigger       => I_PANEL_TRIGGER,
+			o_panel_24v_on_n      => panel_24v_on_n,
+			o_panel_24v_tri       => panel_24v_tri,
+			o_panel_rs485_in      => I_PANEL_RS485_RX,
+			o_panel_rs485_out     => O_PANEL_RS485_TX,
+			o_panel_rs485_en      => O_PANEL_RS485_DE,
+			io_pin_tmp05          => IO_TEMPERATURE,
+			o_vcxo_25_syncn       => O_QOSC1_DAC_SYNCn,
+			o_vcxo_10_syncn       => O_QOSC2_DAC_SYNCn,
+			o_vcxo_25_do          => O_QOSC2_DAC_SDIN,
+			o_vcxo_25_sck         => O_QOSC2_DAC_SCKL,
+			o_scl                 => sclint,
+			o_sda_out             => sdaout,
+			i_sda_in              => sdaint,
+			ignore                => open
+		);
 end behaviour;
