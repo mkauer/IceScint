@@ -68,6 +68,7 @@ begin
 		(
 			0      => i_user2regs.clk_detect_wr,
 			1      => i_user2regs.clk_detect_gps,
+			2      => i_user2regs.clk_detect_ebi,
 			others => '0'
 		) when ADDR_CLOCKS,
 		x"dead" when others;

@@ -149,8 +149,8 @@ entity icescint_io is
 		IO_sda            : inout std_logic;
 		IO_scl            : inout std_logic;
 		-- test signals, NOT AVAILABLE for XC6SLX100FGG484-2 !!!
-		IO_LVDS_IO_P      : out std_logic_vector(5 downto 0); -- LVDS bidir. test port
-		IO_LVDS_IO_N      : out std_logic_vector(5 downto 0); -- LVDS bidir. test port
+		IO_LVDS_IO_P      : out   std_logic_vector(5 downto 0); -- LVDS bidir. test port
+		IO_LVDS_IO_N      : out   std_logic_vector(5 downto 0); -- LVDS bidir. test port
 		O_NOT_USED_GND    : out   std_logic_vector(3 downto 0)
 	);
 end icescint_io;
@@ -215,6 +215,7 @@ architecture behaviour of icescint_io is
 	signal ebi_read     : std_logic;
 	signal ebi_write    : std_logic;
 	signal ebi_select   : std_logic;
+	signal ebi_mck      : std_logic;
 
 	signal panel_24v_on_n : std_logic_vector(0 to 7);
 	signal panel_24v_tri  : std_logic_vector(0 to 7);
@@ -233,8 +234,8 @@ begin
 	IO_LVDS_IO_P(3)          <= ebi_data_in(0);
 	IO_LVDS_IO_P(2)          <= I_EBI1_NRD;
 	-- LEDs, must be assigned so bitgen does not fail
-	IO_LVDS_IO_P(1 downto 0)          <= "00";
-	IO_LVDS_IO_N(1 downto 0)          <= "00";
+	IO_LVDS_IO_P(1 downto 0) <= "00";
+	IO_LVDS_IO_N(1 downto 0) <= "00";
 
 	----------------------------------------------------------------------------
 	-- Clocks and Resets
@@ -274,6 +275,14 @@ begin
 		port map(
 			O => clk_10m_gps,
 			I => I_GPS_TIMEPULSE2
+		);
+
+	-- EBI MCK -----------------------------------------------------------------
+
+	bufg_ebi_mck : BUFG
+		port map(
+			O => ebi_mck,
+			I => I_EBI1_MCK
 		);
 
 	-- Platform Clock
@@ -339,6 +348,19 @@ begin
 			i_rst    => rst_platform,
 			i_detect => clk_10m_gps,
 			o_stable => plat_user2regs.clk_detect_gps
+		);
+
+	clock_detector_ebi : entity work.clock_detector
+		generic map(
+			G_DETECT_DIV    => 8,
+			G_TIMEOUT       => 63,
+			G_STABLE_THRESH => 7
+		)
+		port map(
+			i_clk    => clk_platform,
+			i_rst    => rst_platform,
+			i_detect => ebi_mck,
+			o_stable => plat_user2regs.clk_detect_ebi
 		);
 
 	----------------------------------------------------------------------------

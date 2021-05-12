@@ -21,8 +21,9 @@ package types is
 	type user2regs_io_t is record
 		clk_detect_wr  : std_logic;
 		clk_detect_gps : std_logic;
+		clk_detect_ebi : std_logic;
 	end record;
-	
+
 	type regs2user_io_t is record
 		dummy : std_logic;
 	end record;
@@ -34,10 +35,10 @@ package types is
 	-- LEGACY BELOW
 	----------------------------------------------------------------------------
 
-	constant numberOfChannels : integer := numberOfChannels_platformSpecific;
+	constant numberOfChannels    : integer := numberOfChannels_platformSpecific;
 	--constant numberOfChannels : integer := 8, 24 or may be 16;
 	constant globalClockRate_Hz  : integer := globalClockRate_platformSpecific_hz;
-	constant globalClockRate_kHz : integer := globalClockRate_platformSpecific_hz/1000;
+	constant globalClockRate_kHz : integer := globalClockRate_platformSpecific_hz / 1000;
 
 	constant LTM9007_14_BITSLIPPATTERN : std_logic_vector(6 downto 0) := "1100101";
 
@@ -69,7 +70,7 @@ package types is
 		writeStrobe : std_logic;
 	end record;
 	function smc_vectorToBus(inputVector : std_logic_vector) return smc_bus;
-	function smc_busToVector(inputBus    : smc_bus) return std_logic_vector;
+	function smc_busToVector(inputBus : smc_bus) return std_logic_vector;
 
 	type smc_asyncBus is record
 		chipSelect : std_logic;
@@ -79,7 +80,7 @@ package types is
 		asyncReset : std_logic;
 	end record;
 	function smc_asyncVectorToBus(inputVector : std_logic_vector) return smc_asyncBus;
-	function smc_busToAsyncVector(inputBus    : smc_asyncBus) return std_logic_vector;
+	function smc_busToAsyncVector(inputBus : smc_asyncBus) return std_logic_vector;
 
 	type adc4channel_r is record
 		data  : std_logic_vector(3 downto 0);
@@ -87,18 +88,18 @@ package types is
 		clock : std_logic;
 	end record;
 
-	function countZerosFromLeft8(patternIn  : std_logic_vector) return unsigned;
+	function countZerosFromLeft8(patternIn : std_logic_vector) return unsigned;
 	function countZerosFromRight8(patternIn : std_logic_vector) return unsigned;
 	function getFistOneFromRight8(patternIn : std_logic_vector) return integer;
 
-	function reverse_vector (a : in std_logic_vector) return std_logic_vector;
+	function reverse_vector(a : in std_logic_vector) return std_logic_vector;
 
 	function findFallingEdgeFromRight9(patternIn : std_logic_vector) return unsigned;
 
 	function capValue(value : unsigned; newSize : integer) return unsigned;
 	function capValue(value : std_logic_vector; newSize : integer) return std_logic_vector;
 
-	function std_logic_TIG(value        : std_logic) return std_logic;
+	function std_logic_TIG(value : std_logic) return std_logic;
 	function std_logic_vector_TIG(value : std_logic_vector) return std_logic_vector;
 
 	procedure std_logic_TIG_p(signal i : in std_logic; signal o : out std_logic);
@@ -109,10 +110,10 @@ package types is
 	-------------------------------------------------------------------------------
 
 	type triggerSerdesClocks_t is record
-		rst_div8 : std_logic;
-		clk_118_serdes_div8      : std_logic;
-		clk_950_serdes_io       : std_logic;
-		serdes_strobe_950        : std_logic;
+		rst_div8            : std_logic;
+		clk_118_serdes_div8 : std_logic;
+		clk_950_serdes_io   : std_logic;
+		serdes_strobe_950   : std_logic;
 		asyncReset          : std_logic; -- ## remove
 	end record;
 	-------------------------------------------------------------------------------
@@ -300,7 +301,7 @@ package types is
 		differenceGpsToLocalClock : std_logic_vector(15 downto 0);
 		newData                   : std_logic;
 		--realTimeCounter: std_logic_vector(63 downto 0);
-		realTimeCounterLatched : std_logic_vector(63 downto 0);
+		realTimeCounterLatched    : std_logic_vector(63 downto 0);
 	end record;
 
 	-------------------------------------------------------------------------------
@@ -347,10 +348,10 @@ package types is
 	end record;
 
 	type pixelRateCounter_registerWrite_t is record
-		clock         : std_logic;
-		reset         : std_logic;
-		newDataReset  : std_logic;
-		counterPeriod : std_logic_vector(15 downto 0);
+		clock                 : std_logic;
+		reset                 : std_logic;
+		newDataReset          : std_logic;
+		counterPeriod         : std_logic_vector(15 downto 0);
 		--resetCounter : std_logic_vector(15 downto 0);
 		resetCounter          : std_logic_vector_xCannel_t;
 		doublePulsePrevention : std_logic;
@@ -385,7 +386,7 @@ package types is
 		newDataReset      : std_logic;
 		rateCounterPeriod : std_logic_vector(15 downto 0);
 		--	gateTimeout : std_logic_vector(15 downto 0);
-		resetCounter : std_logic_vector_xCannel_t;
+		resetCounter      : std_logic_vector_xCannel_t;
 		--	doublePulsePrevention : std_logic;
 		--	doublePulseTime : std_logic_vector(7 downto 0);
 	end record;
@@ -408,19 +409,19 @@ package types is
 		--pixelCounterLatched : dataNumberOfChannelsX16Bit_t;
 		--pixelCounterInsideDeadTimeLatched : dataNumberOfChannelsX16Bit_t;
 		--pixelCounterDebugLatched : dataNumberOfChannelsX16Bit_t;
-		counterPeriod : std_logic_vector(15 downto 0);
+		counterPeriod               : std_logic_vector(15 downto 0);
 		--doublePulsePrevention : std_logic;
 		--doublePulseTime : std_logic_vector(7 downto 0);
-		newDataLatched : std_logic;
+		newDataLatched              : std_logic;
 	end record;
 
 	type pixelRateCounter_polarstern_registerWrite_t is record
-		clock            : std_logic;
-		reset            : std_logic;
-		resetCounterTime : std_logic;
-		resetAllCounter  : std_logic;
-		counterPeriod    : std_logic_vector(15 downto 0);
-		resetCounter     : std_logic_vector_xCannel_t;
+		clock               : std_logic;
+		reset               : std_logic;
+		resetCounterTime    : std_logic;
+		resetAllCounter     : std_logic;
+		counterPeriod       : std_logic_vector(15 downto 0);
+		resetCounter        : std_logic_vector_xCannel_t;
 		--doublePulsePrevention : std_logic;
 		--doublePulseTime : std_logic_vector(7 downto 0);
 		newDataLatchedReset : std_logic;
@@ -537,12 +538,12 @@ package types is
 	end record;
 
 	type adcClocks_t is record
-		clk_462_serdes_io            : std_logic;
-		serdes_strobe_462             : std_logic;
-		clk_66_serdes_div7           : std_logic;
-		clk_66_serdes_div7_second      : std_logic;
-		rst_div7      : std_logic;
-		rst_div7_second : std_logic;
+		clk_462_serdes_io         : std_logic;
+		serdes_strobe_462         : std_logic;
+		clk_66_serdes_div7        : std_logic;
+		clk_66_serdes_div7_second : std_logic;
+		rst_div7                  : std_logic;
+		rst_div7_second           : std_logic;
 	end record;
 	type adcFifo_t is record
 		fifoOutA   : std_logic_vector(55 downto 0);
@@ -576,11 +577,11 @@ package types is
 		fifoValidA                 : std_logic;
 		fifoWordsA                 : std_logic_vector(7 downto 0);
 		--fifoWordsA2 : std_logic_vector(7 downto 0);
-		baselineStart        : std_logic_vector(9 downto 0);
-		baselineEnd          : std_logic_vector(9 downto 0);
-		debugChannelSelector : std_logic_vector(2 downto 0);
-		debugFifoControl     : std_logic_vector(15 downto 0);
-		debugFifoOut         : std_logic_vector(15 downto 0);
+		baselineStart              : std_logic_vector(9 downto 0);
+		baselineEnd                : std_logic_vector(9 downto 0);
+		debugChannelSelector       : std_logic_vector(2 downto 0);
+		debugFifoControl           : std_logic_vector(15 downto 0);
+		debugFifoOut               : std_logic_vector(15 downto 0);
 	end record;
 	type ltm9007_14_registerWrite_t is record
 		clock                      : std_logic;
@@ -609,17 +610,17 @@ package types is
 		triggerGeneratorEnabled : std_logic;
 		triggerGeneratorPeriod  : unsigned(31 downto 0);
 
-		drs4TriggerDelay : std_logic_vector(8 downto 0);
+		drs4TriggerDelay        : std_logic_vector(8 downto 0);
 
-		drs4Decimator : std_logic_vector(15 downto 0);
+		drs4Decimator           : std_logic_vector(15 downto 0);
 
-		rate                : std_logic_vector(15 downto 0); -- dataNumberOfChannelsX16Bit_t;
-		rateLatched         : std_logic_vector(15 downto 0); -- dataNumberOfChannelsX16Bit_t;
-		rateDeadTimeLatched : std_logic_vector(15 downto 0); -- dataNumberOfChannelsX16Bit_t;
-		counterPeriod       : std_logic_vector(15 downto 0);
-		sameEventTime       : std_logic_vector(11 downto 0);
+		rate                    : std_logic_vector(15 downto 0); -- dataNumberOfChannelsX16Bit_t;
+		rateLatched             : std_logic_vector(15 downto 0); -- dataNumberOfChannelsX16Bit_t;
+		rateDeadTimeLatched     : std_logic_vector(15 downto 0); -- dataNumberOfChannelsX16Bit_t;
+		counterPeriod           : std_logic_vector(15 downto 0);
+		sameEventTime           : std_logic_vector(11 downto 0);
 
-		gateTime : std_logic_vector(15 downto 0);
+		gateTime                : std_logic_vector(15 downto 0);
 	end record;
 
 	type triggerLogic_registerWrite_t is record
@@ -635,17 +636,17 @@ package types is
 		triggerGeneratorEnabled : std_logic;
 		triggerGeneratorPeriod  : unsigned(31 downto 0);
 
-		drs4TriggerDelay      : std_logic_vector(8 downto 0);
-		drs4TriggerDelayReset : std_logic;
+		drs4TriggerDelay        : std_logic_vector(8 downto 0);
+		drs4TriggerDelayReset   : std_logic;
 
-		drs4Decimator : std_logic_vector(15 downto 0);
+		drs4Decimator           : std_logic_vector(15 downto 0);
 
-		counterPeriod : std_logic_vector(15 downto 0);
-		resetCounter  : std_logic; --_vector(15 downto 0);
-		sameEventTime : std_logic_vector(11 downto 0);
-		softTrigger   : std_logic;
+		counterPeriod           : std_logic_vector(15 downto 0);
+		resetCounter            : std_logic; --_vector(15 downto 0);
+		sameEventTime           : std_logic_vector(11 downto 0);
+		softTrigger             : std_logic;
 
-		gateTime : std_logic_vector(15 downto 0);
+		gateTime                : std_logic_vector(15 downto 0);
 	end record;
 
 	type triggerLogic_t is record
@@ -654,20 +655,20 @@ package types is
 		triggerDelayed          : std_logic;
 		triggerNotDelayed       : std_logic;
 
-		softTrigger : std_logic;
+		softTrigger             : std_logic;
 		--singleSoftTrigger : std_logic;
-		sumTriggerSameEvent : std_logic;
+		sumTriggerSameEvent     : std_logic;
 
-		flasherTrigger     : std_logic;
-		flasherTriggerGate : std_logic;
+		flasherTrigger          : std_logic;
+		flasherTriggerGate      : std_logic;
 
-		timingAndDrs4 : std_logic;
-		timingOnly    : std_logic;
+		timingAndDrs4           : std_logic;
+		timingOnly              : std_logic;
 
-		newData             : std_logic;
-		counterPeriod       : std_logic_vector(15 downto 0);
-		rateLatched         : std_logic_vector(15 downto 0);
-		rateDeadTimeLatched : std_logic_vector(15 downto 0);
+		newData                 : std_logic;
+		counterPeriod           : std_logic_vector(15 downto 0);
+		rateLatched             : std_logic_vector(15 downto 0);
+		rateDeadTimeLatched     : std_logic_vector(15 downto 0);
 		--realTimeCounterLatched : std_logic_vector(63 downto 0);
 		--realTimeDeltaCounterLatched : std_logic_vector(63 downto 0); -- more or less like counterPeriod 
 	end record;
@@ -675,7 +676,7 @@ package types is
 	-------------------------------------------------------------------------------
 
 	type iceTad_registerRead_t is record
-		powerOn : std_logic_vector(7 downto 0);
+		powerOn        : std_logic_vector(7 downto 0);
 		--rs485Data : data8x8Bit_t;
 		rs485RxBusy    : std_logic_vector(7 downto 0);
 		rs485TxBusy    : std_logic_vector(7 downto 0);
@@ -688,9 +689,9 @@ package types is
 		softTxMask     : std_logic_vector(7 downto 0);
 	end record;
 	type iceTad_registerWrite_t is record
-		clock   : std_logic;
-		reset   : std_logic;
-		powerOn : std_logic_vector(7 downto 0);
+		clock          : std_logic;
+		reset          : std_logic;
+		powerOn        : std_logic_vector(7 downto 0);
 		--rs485Data : dataNumberOfChannelsX8Bit_t;
 		rs485Data      : data8x8Bit_t;
 		rs485TxStart   : std_logic_vector(7 downto 0);
@@ -871,15 +872,15 @@ package types is
 		fifo_avrFactor            : std_logic_vector(3 downto 0);
 		decoder2frameWidth        : std_logic_vector(15 downto 0);
 
-		uartDebugLoop0Enable : std_logic;
-		uartDebugLoop1Enable : std_logic;
+		uartDebugLoop0Enable      : std_logic;
+		uartDebugLoop1Enable      : std_logic;
 
-		adc_decoder_t1   : std_logic_vector(15 downto 0);
-		adc_decoder_t2   : std_logic_vector(15 downto 0);
-		adc_decoder_t3   : std_logic_vector(15 downto 0);
-		adc_decoder_t4   : std_logic_vector(15 downto 0);
-		adc_decoder_bits : std_logic_vector(15 downto 0);
-		adc_debug        : std_logic_vector(15 downto 0);
+		adc_decoder_t1            : std_logic_vector(15 downto 0);
+		adc_decoder_t2            : std_logic_vector(15 downto 0);
+		adc_decoder_t3            : std_logic_vector(15 downto 0);
+		adc_decoder_t4            : std_logic_vector(15 downto 0);
+		adc_decoder_bits          : std_logic_vector(15 downto 0);
+		adc_debug                 : std_logic_vector(15 downto 0);
 	end record;
 
 	-------------------------------------------------------------------------------
@@ -891,7 +892,7 @@ package types is
 	type p_triggerPathCounter_t is array (0 to 2) of std_logic_vector(15 downto 0);
 
 	type p_triggerLogic_registerRead_t is record
-		mode : std_logic_vector(3 downto 0);
+		mode                     : std_logic_vector(3 downto 0);
 		--rateCounter : p_triggerPathCounter_t;
 		rateCounterLatched       : p_triggerPathCounter_t;
 		rateCounterSectorLatched : std_logic_vector_array_channelsX16Bit_t;
@@ -934,9 +935,9 @@ end types;
 package body types is
 
 	function smc_vectorToBus(inputVector : std_logic_vector) return smc_bus is
-		variable temp                        : smc_bus;
+		variable temp : smc_bus;
 	begin
-		temp.address := inputVector(23 downto 0);
+		temp.address     := inputVector(23 downto 0);
 		--	temp.write := inputVector(24);
 		temp.writeStrobe := inputVector(25);
 		temp.read        := inputVector(26);
@@ -948,33 +949,33 @@ package body types is
 	end;
 
 	function smc_busToVector(inputBus : smc_bus) return std_logic_vector is
-		variable temp                     : std_logic_vector(31 downto 0);
+		variable temp : std_logic_vector(31 downto 0);
 	begin
 		temp(23 downto 0) := inputBus.address;
-		temp(25) := inputBus.writeStrobe;
-		temp(26) := inputBus.read;
-		temp(27) := inputBus.readStrobe;
-		temp(28) := inputBus.chipSelect;
-		temp(29) := inputBus.reset;
-		temp(30) := inputBus.clock;
+		temp(25)          := inputBus.writeStrobe;
+		temp(26)          := inputBus.read;
+		temp(27)          := inputBus.readStrobe;
+		temp(28)          := inputBus.chipSelect;
+		temp(29)          := inputBus.reset;
+		temp(30)          := inputBus.clock;
 		return temp;
 	end;
 
 	function smc_replaceCs(inputBus : smc_bus; cs_new : std_logic) return smc_bus is
 		variable temp : smc_bus;
 	begin
-		temp.clock      := inputBus.clock;
-		temp.reset      := inputBus.reset;
-		temp.chipSelect := cs_new;
-		temp.address    := inputBus.address;
-		temp.read       := inputBus.read;
-		temp.readStrobe := inputBus.readStrobe;
+		temp.clock       := inputBus.clock;
+		temp.reset       := inputBus.reset;
+		temp.chipSelect  := cs_new;
+		temp.address     := inputBus.address;
+		temp.read        := inputBus.read;
+		temp.readStrobe  := inputBus.readStrobe;
 		temp.writeStrobe := inputBus.writeStrobe;
 		return temp;
 	end;
 
 	function smc_asyncVectorToBus(inputVector : std_logic_vector) return smc_asyncBus is
-		variable temp                             : smc_asyncBus;
+		variable temp : smc_asyncBus;
 	begin
 		temp.address    := inputVector(23 downto 0);
 		temp.write      := inputVector(24);
@@ -985,7 +986,7 @@ package body types is
 	end;
 
 	function smc_busToAsyncVector(inputBus : smc_asyncBus) return std_logic_vector is
-		variable temp                          : std_logic_vector(27 downto 0);
+		variable temp : std_logic_vector(27 downto 0);
 	begin
 		temp(23 downto 0) := inputBus.address;
 		temp(24)          := inputBus.write;
@@ -996,7 +997,7 @@ package body types is
 	end;
 
 	function countZerosFromLeft8(patternIn : std_logic_vector) return unsigned is
-		variable temp                          : unsigned(3 downto 0) := "0000";
+		variable temp : unsigned(3 downto 0) := "0000";
 	begin
 		if (std_match(patternIn, "1-------")) then
 			temp := "0000";
@@ -1023,7 +1024,7 @@ package body types is
 	end;
 
 	function countZerosFromRight8(patternIn : std_logic_vector) return unsigned is
-		variable temp                           : unsigned(3 downto 0) := "0000";
+		variable temp : unsigned(3 downto 0) := "0000";
 	begin
 		if (std_match(patternIn, "-------1")) then
 			temp := "0000";
@@ -1051,7 +1052,7 @@ package body types is
 
 	-- user has to make shure that inpus has at least one '1' / is not x"00"
 	function getFistOneFromRight8(patternIn : std_logic_vector) return integer is
-		variable temp                           : integer range 0 to 7 := 0;
+		variable temp : integer range 0 to 7 := 0;
 	begin
 		if (std_match(patternIn, "-------1")) then
 			temp := 0;
@@ -1070,14 +1071,14 @@ package body types is
 		elsif (std_match(patternIn, "10000000")) then
 			temp := 7;
 		else
-			temp := 0; -- illegal
+			temp := 0;                  -- illegal
 		end if;
 		return temp;
 	end;
 
-	function reverse_vector (a : in std_logic_vector) return std_logic_vector is
-		variable result            : std_logic_vector(a'range);
-		alias aa                   : std_logic_vector(a'REVERSE_RANGE) is a;
+	function reverse_vector(a : in std_logic_vector) return std_logic_vector is
+		variable result : std_logic_vector(a'range);
+		alias aa        : std_logic_vector(a'REVERSE_RANGE) is a;
 	begin
 		for i in aa'range loop
 			result(i) := aa(i);
@@ -1086,7 +1087,7 @@ package body types is
 	end;
 
 	function findFallingEdgeFromRight9(patternIn : std_logic_vector) return unsigned is
-		variable temp                                : unsigned(3 downto 0) := "0000";
+		variable temp : unsigned(3 downto 0) := "0000";
 	begin
 		if (std_match(patternIn, "-------01")) then
 			temp := "0000";
@@ -1128,9 +1129,9 @@ package body types is
 		return std_logic_vector(capValue(unsigned(value), newSize));
 	end;
 
-	function std_logic_TIG(value            : std_logic) return std_logic is
-		variable temp_TPTHRU_TIG                : std_logic;
-		attribute keep of temp_TPTHRU_TIG       : variable is "true";
+	function std_logic_TIG(value : std_logic) return std_logic is
+		variable temp_TPTHRU_TIG : std_logic;
+		attribute keep of temp_TPTHRU_TIG : variable is "true";
 		attribute DONT_TOUCH of temp_TPTHRU_TIG : variable is "true";
 	begin
 		temp_TPTHRU_TIG := value;
@@ -1147,12 +1148,12 @@ package body types is
 	end;
 
 	procedure std_logic_TIG_p(signal i : in std_logic; signal o : out std_logic) is
-		variable temp_TPTHRU_TIG                : std_logic;
-		attribute keep of temp_TPTHRU_TIG       : variable is "true";
+		variable temp_TPTHRU_TIG : std_logic;
+		attribute keep of temp_TPTHRU_TIG : variable is "true";
 		attribute DONT_TOUCH of temp_TPTHRU_TIG : variable is "true";
 	begin
 		temp_TPTHRU_TIG := i;
-		o <= temp_TPTHRU_TIG;
+		o               <= temp_TPTHRU_TIG;
 	end;
 
 	function i2v(value : integer; width : integer) return std_logic_vector is
