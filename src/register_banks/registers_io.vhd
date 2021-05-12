@@ -25,13 +25,15 @@ end entity registers_io;
 architecture RTL of registers_io is
 	subtype address_t is std_logic_vector(15 downto 0);
 
-	constant ADDR_TEST   : address_t := x"0000";
+	constant ADDR_TEST_1 : address_t := x"f554";
+	constant ADDR_TEST_2 : address_t := x"faaa";
 	constant ADDR_CLOCKS : address_t := x"0002";
 
 	signal write_pulse : std_logic;
 	signal read_pulse  : std_logic;
 
-	signal reg_test : register_t := x"0000";
+	signal reg_test_1 : register_t := x"0000";
+	signal reg_test_2 : register_t := x"0000";
 begin
 	-- READ and WRITE signals --------------------------------------------------
 
@@ -64,7 +66,8 @@ begin
 	-- READ multiplexer --------------------------------------------------------
 
 	with i_ebi_addr select o_ebi_data <=
-		reg_test when x"0000",
+		reg_test_1 when ADDR_TEST_1,
+		reg_test_2 when ADDR_TEST_2,
 		(
 			0      => i_user2regs.clk_detect_wr,
 			1      => i_user2regs.clk_detect_gps,
@@ -79,11 +82,13 @@ begin
 	begin
 		if rising_edge(i_clk) then
 			if i_rst = '1' then
-				reg_test <= x"0000";
+				reg_test_1 <= x"0000";
+				reg_test_2 <= x"0000";
 			else
 				if i_write = '1' then
 					case i_ebi_addr is
-						when ADDR_TEST => reg_test <= i_ebi_data;
+						when ADDR_TEST_1 => reg_test_1 <= i_ebi_data;
+						when ADDR_TEST_2 => reg_test_2 <= i_ebi_data;
 						when others    => null;
 					end case;
 
