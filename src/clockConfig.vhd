@@ -94,18 +94,6 @@ begin
 	drs4RefClock <= refClock;
 	clockValid <= dcm1_locked and pll1_locked_buf and pll1_locked;
 
-	BUFIO2_inst : BUFIO2
-	generic map(
-		DIVIDE        => 1,   -- The DIVCLK divider divide-by value
-		DIVIDE_BYPASS => TRUE -- DIVCLK output sourced from Divider (FALSE) or from I input, by-passing Divider (TRUE); default TRUE
-	)
-	port map(
-		I            => i_clk_10m_ext,         -- from GCLK input pin
-		IOCLK        => open,             -- Output Clock to IO
-		DIVCLK       => clk_10m_ext_buffered, -- to PLL/DCM
-		SERDESSTROBE => open              -- Output strobe for IOSERDES2
-	);
-
 	-------------------------------------------------------------------------------
 	DCM_SP_inst : DCM_SP
 	generic map(
@@ -134,7 +122,7 @@ begin
 		PSDONE   => open,             -- 1-bit output: Phase shift done output
 		STATUS   => dcm1_status,       -- 8-bit output: DCM_SP status output
 		CLKFB    => dcm1_feedback,       -- 1-bit input: Clock feedback input
-		CLKIN    => clk_10m_ext_buffered, -- 1-bit input: Clock input
+		CLKIN    => i_clk_10m_ext, -- 1-bit input: Clock input
 		DSSEN    => '0',              -- 1-bit input: Unsupported, specify to GND.
 		PSCLK    => '0',              -- 1-bit input: Phase shift clock input
 		PSEN     => '0',              -- 1-bit input: Phase shift enable
@@ -239,7 +227,7 @@ begin
 		PSDONE   => open,             -- 1-bit output: Phase shift done output
 		STATUS   => dcm3_status,       -- 8-bit output: DCM_SP status output
 		CLKFB    => dcm3_feedback,       -- 1-bit input: Clock feedback input
-		CLKIN    => clk_10m_ext_buffered, -- 1-bit input: Clock input
+		CLKIN    => i_clk_10m_ext, -- 1-bit input: Clock input
 		DSSEN    => '0',              -- 1-bit input: Unsupported, specify to GND.
 		PSCLK    => '0',              -- 1-bit input: Phase shift clock input
 		PSEN     => '0',              -- 1-bit input: Phase shift enable
@@ -339,7 +327,7 @@ begin
 		PSDONE   => open,             -- 1-bit output: Phase shift done output
 		STATUS   => dcm2_status,       -- 8-bit output: DCM_SP status output
 		CLKFB    => dcm2_feedback,       -- 1-bit input: Clock feedback input
-		CLKIN    => clk_10m_ext_buffered, -- 1-bit input: Clock input
+		CLKIN    => i_clk_10m_ext, -- 1-bit input: Clock input
 		DSSEN    => '0',              -- 1-bit input: Unsupported, specify to GND.
 		PSCLK    => '0',              -- 1-bit input: Phase shift clock input
 		PSEN     => '0',              -- 1-bit input: Phase shift enable

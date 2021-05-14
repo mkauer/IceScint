@@ -655,6 +655,7 @@ NET "I_QOSC2_OUT" LOC = J1 | TNM_NET = "I_QOSC2_OUT" | IOBDELAY = NONE | IOSTAND
 
 TIMESPEC "TS_I_QOSC1_OUT" = PERIOD "I_QOSC1_OUT" 40 ns HIGH 50%;
 TIMESPEC "TS_I_QOSC2_OUT" = PERIOD "I_QOSC2_OUT" 100 ns HIGH 50%;
+TIMESPEC "TS_I_EXT_CLK_P" = PERIOD "I_EXT_CLK_P" 100 ns HIGH 50%;
 
 NET "O_QOSC1_DAC_SYNCn" LOC = W8;
 NET "O_QOSC2_DAC_SCKL"  LOC = AB9;
@@ -709,11 +710,11 @@ NET "IO_SCL" DRIVE = 4 | IOSTANDARD = LVCMOS25 | SLEW = SLOW | Pullup | Loc = L2
 #NET "*bitslipfailed*" TPTHRU = thru_5;
 #TIMESPEC TS_thru_5 = FROM FFS THRU thru_5 TO FFS TIG;
 
-NET "*U0/xst_fifo_generator/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gcx.clkx/gsync_stage[1].wr_stg_inst/D*" TIG;
-NET "*U0/xst_fifo_generator/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gcx.clkx/gsync_stage[1].rd_stg_inst/D*" TIG;
+#NET "*U0/xst_fifo_generator/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gcx.clkx/gsync_stage[1].wr_stg_inst/D*" TIG;
+#NET "*U0/xst_fifo_generator/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gcx.clkx/gsync_stage[1].rd_stg_inst/D*" TIG;
 
-NET "*_TPTHRU_TIG*" TPTHRU = thru_x;
-TIMESPEC TS_thru_x = FROM FFS THRU thru_x TO FFS TIG;
+#NET "*_TPTHRU_TIG*" TPTHRU = thru_x;
+#TIMESPEC TS_thru_x = FROM FFS THRU thru_x TO FFS TIG;
 
 #NET "*_TO_TIG*"
 #TIMEGRP to_group_x "*_TO_TIG*"
@@ -722,3 +723,5 @@ TIMESPEC TS_thru_x = FROM FFS THRU thru_x TO FFS TIG;
 PIN "*PANEL_RS485*" TIG = TS_1;
 
 
+NET "I_EXT_CLK_P" CLOCK_DEDICATED_ROUTE = FALSE;
+# NET "I_QOSC2_OUT" CLOCK_DEDICATED_ROUTE = FALSE; 

@@ -18,13 +18,11 @@ package types is
 
 	subtype register_t is std_logic_vector(15 downto 0);
 
-	type user2regs_io_t is record
-		clk_detect_wr  : std_logic;
-		clk_detect_gps : std_logic;
-		clk_detect_ebi : std_logic;
+	type user2regs_t is record
+		sys_clock_source : std_logic;
 	end record;
 
-	type regs2user_io_t is record
+	type regs2user_t is record
 		dummy : std_logic;
 	end record;
 

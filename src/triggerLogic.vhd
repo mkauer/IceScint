@@ -174,7 +174,7 @@ begin
 				if triggeradder(112 + j) > registerWrite.triggerSum then
 					triggerSerdesNotDelayed(j) <= '1';
 				else
-					triggerSerdesNotDelayed(j) <= triggersec; -- verodert mit regelm�ssigem trigger
+					triggerSerdesNotDelayed(j) <= triggersec;
 				end if;
 			end if;
 		end process;

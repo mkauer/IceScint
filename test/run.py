@@ -13,6 +13,7 @@ lib = vu.add_library("lib")
 lib.add_source_files("src/*.vhd")
 lib.add_source_files("../lib/noasic/components/*.vhd")
 lib.add_source_files("../src/util/*.vhd")
+lib.add_source_files("../src/register_banks/register_sync.vhd")
 
 
 # Run vunit function

@@ -11,6 +11,6 @@ icescint.files = [
 #unisim.files = [
 #    '/opt/Xilinx/14.7/ISE_DS/ISE/vhdl/src/unisims/**/*.vhd'
 #]
-#vunit_lib.files = [
-#    '/usr/lib/python3.9/site-packages/vunit/vhdl/**/*.vhd'
-#]
+vunit_lib.files = [
+  '/usr/lib/python3.9/site-packages/vunit/vhdl/**/*.vhd'
+]

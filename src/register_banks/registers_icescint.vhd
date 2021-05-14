@@ -2,11 +2,11 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.types.regs2user_io_t;
-use work.types.user2regs_io_t;
+use work.types.regs2user_t;
+use work.types.user2regs_t;
 use work.types.register_t;
 
-entity registers_io is
+entity registers_icescint is
 	port(
 		i_clk       : in  std_logic;
 		i_rst       : in  std_logic;
@@ -17,23 +17,27 @@ entity registers_io is
 		i_ebi_data  : in  std_logic_vector(15 downto 0);
 		o_ebi_data  : out std_logic_vector(15 downto 0);
 		-- user interface
-		i_user2regs : in  user2regs_io_t;
-		o_regs2user : out regs2user_io_t
+		i_user2regs : in  user2regs_t;
+		o_regs2user : out regs2user_t
 	);
-end entity registers_io;
+end entity;
 
-architecture RTL of registers_io is
+architecture RTL of registers_icescint is
 	subtype address_t is std_logic_vector(15 downto 0);
-
-	constant ADDR_TEST_1 : address_t := x"f554";
-	constant ADDR_TEST_2 : address_t := x"faaa";
-	constant ADDR_CLOCKS : address_t := x"0002";
 
 	signal write_pulse : std_logic;
 	signal read_pulse  : std_logic;
 
-	signal reg_test_1 : register_t := x"0000";
-	signal reg_test_2 : register_t := x"0000";
+	-- ONLY USE EVEN ADDRESSES
+	constant ADDR_SYS_CLOCK_SOURCE : address_t := x"0010";
+	constant ADDR_TEST_1           : address_t := x"f554";
+	constant ADDR_TEST_2           : address_t := x"faaa";
+	constant ADDR_TEST_SUM         : address_t := x"f000";
+
+	signal reg_sys_clock_source : register_t;
+	signal reg_test_1           : register_t := x"0000";
+	signal reg_test_2           : register_t := x"0000";
+	signal reg_test_sum         : register_t;
 begin
 	-- READ and WRITE signals --------------------------------------------------
 
@@ -63,17 +67,22 @@ begin
 			o_edge  => read_pulse
 		);
 
+	-- Misc --------------------------------------------------------
+
+	reg_sys_clock_source <= (
+		1      => i_user2regs.sys_clock_source,
+		others => '0'
+	);
+
+	reg_test_sum <= std_logic_vector(unsigned(reg_test_1) + unsigned(reg_test_2));
+
 	-- READ multiplexer --------------------------------------------------------
 
 	with i_ebi_addr select o_ebi_data <=
+		reg_sys_clock_source when ADDR_SYS_CLOCK_SOURCE,
 		reg_test_1 when ADDR_TEST_1,
 		reg_test_2 when ADDR_TEST_2,
-		(
-			0      => i_user2regs.clk_detect_wr,
-			1      => i_user2regs.clk_detect_gps,
-			2      => i_user2regs.clk_detect_ebi,
-			others => '0'
-		) when ADDR_CLOCKS,
+		reg_test_sum when ADDR_TEST_SUM,
 		x"dead" when others;
 
 	-- WRITE registers ---------------------------------------------------------
@@ -89,7 +98,7 @@ begin
 					case i_ebi_addr is
 						when ADDR_TEST_1 => reg_test_1 <= i_ebi_data;
 						when ADDR_TEST_2 => reg_test_2 <= i_ebi_data;
-						when others    => null;
+						when others      => null;
 					end case;
 
 				end if;
