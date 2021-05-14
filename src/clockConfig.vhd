@@ -40,7 +40,6 @@ end clockConfig;
 
 architecture Behavioral of clockConfig is
 
-	signal clk_10m_ext_buffered : std_logic                    := '0';
 	signal dcm1_clko_30   : std_logic                    := '0';
 	signal dcm1_locked       : std_logic                    := '0';
 	signal dcm1_status       : std_logic_vector(7 downto 0) := x"00";
@@ -71,7 +70,6 @@ architecture Behavioral of clockConfig is
 	signal reset_i0          : std_logic_vector(7 downto 0) := x"ff";
 	signal reset_i1          : std_logic_vector(7 downto 0) := x"ff";
 	signal reset_i2          : std_logic_vector(7 downto 0) := x"ff";
-	signal reset_i3          : std_logic_vector(7 downto 0) := x"ff";
 	signal clockErrorTrigger : std_logic                    := '0';
 	signal clockErrorAdc     : std_logic                    := '0';
 	--	signal clockErrorAll : std_logic := '0';
@@ -92,9 +90,6 @@ architecture Behavioral of clockConfig is
 
 	signal debugSync1 : clockConfig_debug_t;
 	signal debugSync2 : clockConfig_debug_t;
-
-	signal pll1_clko_div16_60 : std_logic := '0';
-
 begin
 	drs4RefClock <= refClock;
 	clockValid <= dcm1_locked and pll1_locked_buf and pll1_locked;
@@ -186,7 +181,7 @@ begin
 		CLKOUT2 => pll1_clk0_div8_120,
 		CLKOUT3 => open,
 		CLKOUT4 => open,
-		CLKOUT5 => pll1_clko_div16_60,
+		CLKOUT5 => open,
 		LOCKED => pll1_locked,
 		CLKFBIN => pll1_feedback,
 		CLKIN => dcm1_clko_30,
@@ -428,13 +423,4 @@ begin
 	triggerSerdesClocks.clk_118_serdes_div8 <= pll1_clk0_div8_120_global;
 	triggerSerdesClocks.rst_div8            <= reset_i0(0);
 	triggerSerdesClocks.asyncReset <= clockErrorTrigger;
-	process (pll1_clko_div16_60, clockErrorTrigger)
-	begin
-		if (rising_edge(pll1_clko_div16_60)) then
-			reset_i3 <= '0' & reset_i3(reset_i3'length - 1 downto 1);
-		end if;
-		if (clockErrorTrigger = '1') then
-			reset_i3(reset_i3'length - 1 downto 3) <= (others => '1');
-		end if;
-	end process;
 end Behavioral;

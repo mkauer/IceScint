@@ -68,7 +68,7 @@ entity icescint is
 		i_panel_trigger   : in  std_logic_vector(0 to NUM_UDAQ - 1);
 		o_panel_24v_on_n  : out std_logic_vector(0 to NUM_UDAQ - 1); -- nP24VOn
 		o_panel_24v_tri   : out std_logic_vector(0 to NUM_UDAQ - 1); -- nP24VOnTristate
-		o_panel_rs485_in  : in  std_logic_vector(0 to NUM_UDAQ - 1); -- rs485DataIn
+		i_panel_rs485_in  : in  std_logic_vector(0 to NUM_UDAQ - 1); -- rs485DataIn
 		o_panel_rs485_out : out std_logic_vector(0 to NUM_UDAQ - 1); -- rs485DataOut
 		o_panel_rs485_en  : out std_logic_vector(0 to NUM_UDAQ - 1); -- rs485DataEnable
 
@@ -420,7 +420,7 @@ begin
 	x18 : entity work.iceTad port map(
 		nP24VOn           => o_panel_24v_on_n,
 		nP24VOnTristate   => o_panel_24v_tri,
-		rs485In           => o_panel_rs485_in,
+		rs485In           => i_panel_rs485_in,
 		rs485Out          => o_panel_rs485_out,
 		rs485DataTristate => open,
 		rs485DataEnable   => o_panel_rs485_en,

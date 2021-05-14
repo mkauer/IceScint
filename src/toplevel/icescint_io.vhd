@@ -695,7 +695,7 @@ begin
 			i_panel_trigger       => I_PANEL_TRIGGER,
 			o_panel_24v_on_n      => panel_24v_on_n,
 			o_panel_24v_tri       => panel_24v_tri,
-			o_panel_rs485_in      => I_PANEL_RS485_RX,
+			i_panel_rs485_in      => I_PANEL_RS485_RX,
 			o_panel_rs485_out     => O_PANEL_RS485_TX,
 			o_panel_rs485_en      => O_PANEL_RS485_DE,
 			io_pin_tmp05          => IO_TEMPERATURE,
