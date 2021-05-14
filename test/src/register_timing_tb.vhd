@@ -20,7 +20,7 @@ architecture RTL of register_timing_tb is
 	signal write : std_logic := '1';
 	signal cs    : std_logic := '1';
 
-	signal addr : std_logic_vector(5 downto 0) := "XXXXXX";
+	signal addr : std_logic_vector(3 downto 0) := "XXXX";
 	signal data : std_logic_vector(3 downto 0) := "XXXX";
 begin
 	i_clk <= not i_clk after CLK_PERIOD / 2;
@@ -30,8 +30,7 @@ begin
 			G_INVERT_RWCS => true,
 			G_DATA_WIDTH  => 4,
 			G_ADDR_WIDTH  => 4,
-			G_GUARD_FFS   => 1,
-			G_BANK        => "00"
+			G_GUARD_FFS   => 1
 		)
 		port map(
 			i_clk       => i_clk,
@@ -40,8 +39,7 @@ begin
 			i_ebi_write => write,
 			i_ebi_cs    => cs,
 			i_ebi_addr  => addr(3 downto 0),
-			i_ebi_data  => data,
-			i_ebi_bank  => addr(5 downto 4)
+			i_ebi_data  => data
 		);
 
 	main : process
@@ -54,50 +52,50 @@ begin
 		wait for CLK_PERIOD * 30.5;
 
 		-- write to this bank
-		addr  <= "001010";
+		addr  <= "1010";
 		data  <= "1010";
-		cs    <= '1';
-		write <= '1';
-		wait for STROBE;
-		addr  <= "XXXXXX";
-		data  <= "XXXX";
 		cs    <= '0';
 		write <= '0';
+		wait for STROBE;
+		addr  <= "XXXX";
+		data  <= "XXXX";
+		cs    <= '1';
+		write <= '1';
 
 		wait for CLK_PERIOD * 10;
 
 		-- write to other bank
-		addr  <= "011010";
+		addr  <= "0000";
 		data  <= "1010";
-		cs    <= '1';
-		write <= '1';
-		wait for STROBE;
-		addr  <= "XXXXXX";
-		data  <= "XXXX";
 		cs    <= '0';
 		write <= '0';
+		wait for STROBE;
+		addr  <= "XXXX";
+		data  <= "XXXX";
+		cs    <= '1';
+		write <= '1';
 
 		wait for CLK_PERIOD * 10;
 
 		-- read from this bank
-		addr <= "001010";
-		cs   <= '1';
-		read <= '1';
-		wait for STROBE;
-		addr <= "XXXXXX";
+		addr <= "1000";
 		cs   <= '0';
 		read <= '0';
+		wait for STROBE;
+		addr <= "XXXX";
+		cs   <= '1';
+		read <= '1';
 
 		wait for CLK_PERIOD * 10;
 
 		-- read from other bank
-		addr <= "011010";
-		cs   <= '1';
-		read <= '1';
-		wait for STROBE;
-		addr <= "XXXXXX";
+		addr <= "0000";
 		cs   <= '0';
 		read <= '0';
+		wait for STROBE;
+		addr <= "XXXX";
+		cs   <= '1';
+		read <= '1';
 
 		wait for CLK_PERIOD * 50;
 

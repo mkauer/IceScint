@@ -158,8 +158,11 @@ end icescint_io;
 architecture behaviour of icescint_io is
 	attribute keep : string;
 
+	attribute keep of IO_EBI1_D : signal is "true";
+
 	signal clk_10m_osc       : std_logic;
 	signal clk_10m_osc_bufio : std_logic;
+	signal clk_10m_wr_raw    : std_logic;
 	signal clk_10m_wr        : std_logic;
 	attribute keep of clk_10m_osc : signal is "true";
 	attribute keep of clk_10m_wr : signal is "true";
@@ -263,6 +266,16 @@ begin
 		);
 
 	-- 10 MHz White Rabbit -----------------------------------------------------
+
+	ibufds_clk_10m_wr : IBUFDS
+		generic map(
+			DIFF_TERM => true
+		)
+		port map(
+			I  => I_EXT_CLK_P,
+			IB => I_EXT_CLK_N,
+			O  => clk_10m_wr_raw
+		);
 
 	bufg_10m_wr : IBUFGDS
 		port map(
@@ -402,9 +415,9 @@ begin
 	ebi_data_in  <= IO_EBI1_D;
 	O_EBI1_NWAIT <= '1';
 
-	p_ebi : process(all)
+	p_ebi : process(ebi_select, ebi_read, ebi_data_out)
 	begin
-		if ebi_select and ebi_read then
+		if ebi_select = '1' and ebi_read = '1' then
 			IO_EBI1_D <= ebi_data_out;
 		else
 			IO_EBI1_D <= (others => 'Z');
@@ -543,6 +556,9 @@ begin
 	----------------------------------------------------------------------------
 
 	icescint_inst : entity work.icescint
+		generic map(
+			EBI_SIGNAL_INVERT => true
+		)
 		port map(
 			i_rst_ext             => sys_reset,
 			i_clk_10m_0           => clk_10m_osc,
@@ -571,9 +587,10 @@ begin
 			o_radio_dac_do        => radio_dac_do,
 			o_radio_dac_sck       => radio_dac_sck,
 			o_radio_power24n      => radio_power24n,
-			i_ebi_select          => ebi_select,
-			i_ebi_write           => ebi_write,
-			i_ebi_read            => ebi_read,
+			-- EBI interface to ARM
+			i_ebi_select          => I_EBI1_NCS2,
+			i_ebi_write           => I_EBI1_NWE,
+			i_ebi_read            => I_EBI1_NRD,
 			i_ebi_address         => ebi_address(15 downto 0),
 			i_ebi_data_in         => ebi_data_in,
 			o_ebi_data_out        => ebi_data_out,

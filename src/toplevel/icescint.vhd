@@ -20,8 +20,9 @@ use unisim.vcomponents.all;
 
 entity icescint is
 	generic(
-		NUM_RADIO : natural := 3;
-		NUM_UDAQ  : natural := 8
+		EBI_SIGNAL_INVERT : boolean := true;
+		NUM_RADIO         : natural := 3;
+		NUM_UDAQ          : natural := 8
 	);
 	port(
 		i_rst_ext             : in    std_logic;
@@ -85,8 +86,14 @@ end icescint;
 architecture behaviour of icescint is
 	attribute keep : string;
 
+	signal clk_10m_selected : std_logic;
+	signal dcm_clk          : std_logic;
+	signal dcm_locked       : std_logic;
+	signal pll_reset        : std_logic;
+
 	constant SYS_CLOCK_PERIOD : time := 10.0 ns;
 	signal sys_clk            : std_logic;
+	signal sys_rst_input      : std_logic;
 	signal sys_rst            : std_logic;
 	signal sys_pll_feedback   : std_logic;
 	signal sys_pll_locked     : std_logic;
@@ -97,6 +104,13 @@ architecture behaviour of icescint is
 	signal adc_refclk         : std_logic;
 	signal adc_rst            : std_logic;
 
+	-- registers
+	signal sys_reg_reading : std_logic;
+	signal sys_reg_read    : std_logic;
+	signal sys_reg_write   : std_logic;
+	signal sys_reg_addr    : std_logic_vector(i_ebi_address'range);
+	signal sys_reg_data    : std_logic_vector(i_ebi_data_in'range);
+
 	signal user2regs : user2regs_t;
 	signal regs2user : regs2user_t;
 
@@ -106,90 +120,121 @@ architecture behaviour of icescint is
 
 	signal addressAndControlBus : std_logic_vector(31 downto 0);
 
-	signal eventFifoSystem_0r   : eventFifoSystem_registerRead_t;
-	signal eventFifoSystem_0w   : eventFifoSystem_registerWrite_t;
-	signal dac088s085_x3_0r     : dac088s085_x3_registerRead_t;
-	signal dac088s085_x3_0w     : dac088s085_x3_registerWrite_t;
-	signal internalTiming_0r    : internalTiming_registerRead_t;
-	signal internalTiming_0w    : internalTiming_registerWrite_t;
-	signal whiteRabbitTiming_0r : whiteRabbitTiming_registerRead_t;
-	signal whiteRabbitTiming_0w : whiteRabbitTiming_registerWrite_t;
-	signal ad56x1_0r            : ad56x1_registerRead_t;
-	signal ad56x1_0w            : ad56x1_registerWrite_t;
-	signal drs4_0r              : drs4_registerRead_t;
-	signal drs4_0w              : drs4_registerWrite_t;
-	signal drs4_1r              : drs4_registerRead_t;
-	signal drs4_1w              : drs4_registerWrite_t;
-	signal drs4_2r              : drs4_registerRead_t;
-	signal drs4_2w              : drs4_registerWrite_t;
-	signal ltm9007_14r          : ltm9007_14_registerRead_t;
-	signal ltm9007_14_0r        : ltm9007_14_registerRead_t;
-	signal ltm9007_14_0w        : ltm9007_14_registerWrite_t;
-	signal ltm9007_14_1r        : ltm9007_14_registerRead_t;
-	signal ltm9007_14_1w        : ltm9007_14_registerWrite_t;
-	signal ltm9007_14_2r        : ltm9007_14_registerRead_t;
-	signal ltm9007_14_2w        : ltm9007_14_registerWrite_t;
-	signal triggerLogic_0r      : triggerLogic_registerRead_t;
-	signal triggerLogic_0w      : triggerLogic_registerWrite_t;
-	signal iceTad_0r            : iceTad_registerRead_t;
-	signal iceTad_0w            : iceTad_registerWrite_t;
-	signal panelPower_0r        : panelPower_registerRead_t;
-	signal panelPower_0w        : panelPower_registerWrite_t;
-	signal tmp05_0r             : tmp05_registerRead_t;
-	signal tmp05_0w             : tmp05_registerWrite_t;
-	signal i2c_control_r        : i2c_registerRead_t;
-	signal i2c_control_w        : i2c_registerWrite_t;
-	signal triggerSerdesClocks  : triggerSerdesClocks_t;
-	signal triggerTiming        : triggerTiming_t;
-	signal adcData              : ltm9007_14_to_eventFifoSystem_old_t;
-	signal adcData2             : ltm9007_14_to_eventFifoSystem_old_t;
-	signal adcData3             : ltm9007_14_to_eventFifoSystem_old_t;
-	signal internalTiming       : internalTiming_t;
-	signal whiteRabbitTiming    : whiteRabbitTiming_t;
-	signal adcFifo              : adcFifo_t;
-	signal adcClocks            : adcClocks_t;
-	signal trigger              : triggerLogic_t;
-	signal triggerDRS4          : std_logic;
-	signal pixelRates           : pixelRateCounter_t;
-	signal clockConfig_debug    : clockConfig_debug_t;
+	--	signal eventFifoSystem_0r   : eventFifoSystem_registerRead_t;
+	--	signal eventFifoSystem_0w   : eventFifoSystem_registerWrite_t;
+	--	signal dac088s085_x3_0r     : dac088s085_x3_registerRead_t;
+	--	signal dac088s085_x3_0w     : dac088s085_x3_registerWrite_t;
+	--	signal internalTiming_0r    : internalTiming_registerRead_t;
+	--	signal internalTiming_0w    : internalTiming_registerWrite_t;
+	--	signal whiteRabbitTiming_0r : whiteRabbitTiming_registerRead_t;
+	--	signal whiteRabbitTiming_0w : whiteRabbitTiming_registerWrite_t;
+	--	signal ad56x1_0r            : ad56x1_registerRead_t;
+	--	signal ad56x1_0w            : ad56x1_registerWrite_t;
+	--	signal drs4_0r              : drs4_registerRead_t;
+	--	signal drs4_0w              : drs4_registerWrite_t;
+	--	signal drs4_1r              : drs4_registerRead_t;
+	--	signal drs4_1w              : drs4_registerWrite_t;
+	--	signal drs4_2r              : drs4_registerRead_t;
+	--	signal drs4_2w              : drs4_registerWrite_t;
+	--	signal ltm9007_14r          : ltm9007_14_registerRead_t;
+	--	signal ltm9007_14_0r        : ltm9007_14_registerRead_t;
+	--	signal ltm9007_14_0w        : ltm9007_14_registerWrite_t;
+	--	signal ltm9007_14_1r        : ltm9007_14_registerRead_t;
+	--	signal ltm9007_14_1w        : ltm9007_14_registerWrite_t;
+	--	signal ltm9007_14_2r        : ltm9007_14_registerRead_t;
+	--	signal ltm9007_14_2w        : ltm9007_14_registerWrite_t;
+	--	signal triggerLogic_0r      : triggerLogic_registerRead_t;
+	--	signal triggerLogic_0w      : triggerLogic_registerWrite_t;
+	--	signal iceTad_0r            : iceTad_registerRead_t;
+	--	signal iceTad_0w            : iceTad_registerWrite_t;
+	--	signal panelPower_0r        : panelPower_registerRead_t;
+	--	signal panelPower_0w        : panelPower_registerWrite_t;
+	--	signal tmp05_0r             : tmp05_registerRead_t;
+	--	signal tmp05_0w             : tmp05_registerWrite_t;
+	--	signal i2c_control_r        : i2c_registerRead_t;
+	--	signal i2c_control_w        : i2c_registerWrite_t;
+	--	signal triggerSerdesClocks  : triggerSerdesClocks_t;
+	--	signal triggerTiming        : triggerTiming_t;
+	--	signal adcData              : ltm9007_14_to_eventFifoSystem_old_t;
+	--	signal adcData2             : ltm9007_14_to_eventFifoSystem_old_t;
+	--	signal adcData3             : ltm9007_14_to_eventFifoSystem_old_t;
+	--	signal internalTiming       : internalTiming_t;
+	--	signal whiteRabbitTiming    : whiteRabbitTiming_t;
+	--	signal adcFifo              : adcFifo_t;
+	--	signal adcClocks            : adcClocks_t;
+	--	signal trigger              : triggerLogic_t;
+	--	signal triggerDRS4          : std_logic;
+	--	signal pixelRates           : pixelRateCounter_t;
+	--	signal clockConfig_debug    : clockConfig_debug_t;
 
-	signal fifo : std_logic_vector(5 downto 0);
+	--	signal fifo : std_logic_vector(5 downto 0);
+	--
+	--	constant numberOfDsr : integer := 3;
+	--	type drsChannel_t is array (0 to numberOfDsr - 1) of std_logic_vector(7 downto 0);
+	--	signal discriminator : drsChannel_t;
+	--
+	--	signal deadTime           : std_logic;
+	--	signal rateCounterTimeOut : std_logic;
+	--
+	--	signal edgeData      : std_logic_vector(8 * 16 - 1 downto 0);
+	--	signal edgeDataReady : std_logic;
 
-	constant numberOfDsr : integer := 3;
-	type drsChannel_t is array (0 to numberOfDsr - 1) of std_logic_vector(7 downto 0);
-	signal discriminator : drsChannel_t;
-
-	signal deadTime           : std_logic;
-	signal rateCounterTimeOut : std_logic;
-
-	signal edgeData      : std_logic_vector(8 * 16 - 1 downto 0);
-	signal edgeDataReady : std_logic;
-
-	signal drs4AndAdcData          : drs4AndAdcData_vector_t;
-	signal drs4_to_eventFifoSystem : drs4_to_eventFifoSystem_t;
-
+	--	signal drs4AndAdcData          : drs4AndAdcData_vector_t;
+	--	signal drs4_to_eventFifoSystem : drs4_to_eventFifoSystem_t;
 begin
 
-	pll_sys : PLL_ADV
+	----------------------------------------------------------------------------
+	-- Clock Selection and Synthesis
+	----------------------------------------------------------------------------
+
+	user2regs.sys_clock_source <= i_clk_10m_sel;
+
+	-- select between external clocks
+	p_clock_sel : process(i_clk_10m_0, i_clk_10m_1, i_clk_10m_sel)
+	begin
+		if i_clk_10m_sel = '1' then
+			clk_10m_selected <= i_clk_10m_1;
+		else
+			clk_10m_selected <= i_clk_10m_0;
+		end if;
+	end process;
+
+	-- convert 10 MHz input clock to 50 MHz for PLL (19 MHz minimum input frequency)
+	dcm_1 : DCM_CLKGEN
 		generic map(
-			BANDWIDTH              => "OPTIMIZED",
-			CLKFBOUT_DESKEW_ADJUST => "NONE",
-			CLKFBOUT_MULT          => 50, -- VCO: 500 MHz
-			CLKFBOUT_PHASE         => 0.0,
-			CLKIN1_PERIOD          => 100.0,
-			CLKIN2_PERIOD          => 100.0,
-			CLKOUT0_DIVIDE         => 5, -- 100 MHz system clock 
-			CLKOUT1_DIVIDE         => 7, -- 70 MHz ADC data clock
-			CLKOUT2_DIVIDE         => 1, -- 500 MHz ADC SERDES clock
-			CLKOUT3_DIVIDE         => 14, -- 35 MHz ADC reference clock
-			CLKOUT4_DIVIDE         => 1, -- NOT USED
-			CLKOUT5_DIVIDE         => 1, -- NOT USED
-			CLK_FEEDBACK           => "CLKFBOUT",
-			COMPENSATION           => "SYSTEM_SYNCHRONOUS",
-			DIVCLK_DIVIDE          => 1
+			CLKFX_MD_MAX   => 5.0,
+			CLKFX_MULTIPLY => 5,
+			CLKIN_PERIOD   => 100.0
 		)
 		port map(
-			REL      => '0',
+			CLKFX     => dcm_clk,
+			CLKIN     => clk_10m_selected,
+			FREEZEDCM => '0',
+			PROGCLK   => '0',
+			PROGDATA  => '0',
+			PROGEN    => '0',
+			LOCKED    => dcm_locked,
+			RST       => i_rst_ext
+		);
+
+	pll_reset <= not dcm_locked or i_rst_ext;
+
+	pll_sys : PLL_BASE
+		generic map(
+			CLKFBOUT_MULT  => 10,       -- VCO: 500 MHz
+			CLKFBOUT_PHASE => 0.0,
+			CLKIN_PERIOD   => 20.0,
+			CLKOUT0_DIVIDE => 4,        -- 125 MHz system clock (100 MHz is too slow for registers)
+			CLKOUT1_DIVIDE => 7,        -- 70 MHz ADC data clock
+			CLKOUT2_DIVIDE => 1,        -- 500 MHz ADC SERDES clock
+			CLKOUT3_DIVIDE => 14,       -- 35 MHz ADC reference clock
+			CLKOUT4_DIVIDE => 1,        -- NOT USED
+			CLKOUT5_DIVIDE => 1,        -- NOT USED
+			CLK_FEEDBACK   => "CLKFBOUT",
+			COMPENSATION   => "SYSTEM_SYNCHRONOUS",
+			DIVCLK_DIVIDE  => 1
+		)
+		port map(
 			CLKFBOUT => sys_pll_feedback,
 			CLKOUT0  => sys_clk,
 			CLKOUT1  => adc_clk,
@@ -199,25 +244,87 @@ begin
 			CLKOUT5  => open,
 			LOCKED   => sys_pll_locked,
 			CLKFBIN  => sys_pll_feedback,
-			CLKIN1   => i_clk_10m_0,
-			CLKIN2   => i_clk_10m_1,
-			CLKINSEL => i_clk_10m_sel,
-			DADDR    => "00000",
-			DCLK     => '0',
-			DEN      => '0',
-			DI       => x"0000",
-			DWE      => '0',
-			RST      => i_rst_ext
+			CLKIN    => dcm_clk,
+			RST      => pll_reset
+		);
+
+	sys_rst_input <= i_rst_ext or (not sys_pll_locked) or (not dcm_locked);
+
+	sys_rst_sync : entity work.reset_synchronizer
+		generic map(
+			G_RELEASE_DELAY_CYCLES => 5
+		)
+		port map(
+			i_reset => sys_rst_input,
+			i_clk   => sys_clk,
+			o_reset => sys_rst
+		);
+
+	----------------------------------------------------------------------------
+	-- uDAQs
+	----------------------------------------------------------------------------
+
+	gen_udaq_tx : for i in 0 to NUM_UDAQ - 1 generate
+		signal fifo_full  : std_logic;
+		signal fifo_valid : std_logic;
+		signal fifo_write : std_logic;
+		signal fifo_read  : std_logic;
+	begin
+		fifo_write <= regs2user.udaq_tx_valid(i) and (not fifo_full);
+		fifo_read  <= regs2user.udaq_rx_ready(i) and fifo_valid;
+
+		user2regs.udaq_tx_ready(i) <= not fifo_full;
+		user2regs.udaq_rx_valid(i) <= fifo_valid;
+
+		fifo_tx : entity work.udaq_tx_fifo
+			port map(
+				clk   => sys_clk,
+				srst  => sys_rst,
+				din   => regs2user.udaq_tx_data,
+				wr_en => fifo_write,
+				rd_en => fifo_read,
+				dout  => user2regs.udaq_rx_data(i),
+				full  => fifo_full,
+				empty => open,
+				valid => fifo_valid
+			);
+	end generate;
+
+	----------------------------------------------------------------------------
+	-- Register Interface
+	----------------------------------------------------------------------------
+
+	register_sync : entity work.register_sync
+		generic map(
+			G_INVERT_RWCS => EBI_SIGNAL_INVERT,
+			G_DATA_WIDTH  => 16,
+			G_ADDR_WIDTH  => 16,
+			G_GUARD_FFS   => 1
+		)
+		port map(
+			i_clk       => sys_clk,
+			i_rst       => sys_rst,
+			i_ebi_read  => i_ebi_read,
+			i_ebi_write => i_ebi_write,
+			i_ebi_cs    => i_ebi_select,
+			i_ebi_addr  => i_ebi_address,
+			i_ebi_data  => i_ebi_data_in,
+			o_reading   => sys_reg_reading,
+			o_read      => sys_reg_read,
+			o_write     => sys_reg_write,
+			o_addr      => sys_reg_addr,
+			o_data      => sys_reg_data
 		);
 
 	registers : entity work.registers_icescint
 		port map(
 			i_clk       => sys_clk,
 			i_rst       => sys_rst,
-			i_read      => i_ebi_read,
-			i_write     => i_ebi_write,
-			i_ebi_addr  => i_ebi_address,
-			i_ebi_data  => i_ebi_data_in,
+			i_reading   => sys_reg_reading,
+			i_read      => sys_reg_read,
+			i_write     => sys_reg_write,
+			i_ebi_addr  => sys_reg_addr,
+			i_ebi_data  => sys_reg_data,
 			o_ebi_data  => o_ebi_data_out,
 			i_user2regs => user2regs,
 			o_regs2user => regs2user
