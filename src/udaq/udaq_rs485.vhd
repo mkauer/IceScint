@@ -34,8 +34,8 @@ architecture RTL of udaq_rs485 is
 	signal rx_fifo_write : std_logic;
 	signal rx_fifo_read  : std_logic;
 
-	signal tx_uart_data  : std_logic_vector(7 downto 0);
-	signal tx_uart_ready : std_logic;
+	signal tx_uart_data   : std_logic_vector(7 downto 0);
+	signal tx_uart_active : std_logic;
 
 	signal tx_fifo_full  : std_logic;
 	signal tx_fifo_valid : std_logic;
@@ -43,25 +43,28 @@ architecture RTL of udaq_rs485 is
 	signal tx_fifo_read  : std_logic;
 begin
 
-	uart : entity work.UART
+	uart_rx : entity work.UART_RX
 		generic map(
-			CLK_FREQ      => G_CLK_FREQ,
-			BAUD_RATE     => G_BAUD_RATE,
-			PARITY_BIT    => "none",
-			USE_DEBOUNCER => true
+			g_CLKS_PER_BIT => G_CLK_FREQ / G_BAUD_RATE
 		)
 		port map(
-			CLK          => i_clk,
-			RST          => i_rst,
-			UART_TXD     => o_rs485_tx,
-			UART_RXD     => i_rs485_rx,
-			DIN          => tx_uart_data,
-			DIN_VLD      => tx_fifo_valid,
-			DIN_RDY      => tx_uart_ready,
-			DOUT         => rx_uart_data,
-			DOUT_VLD     => rx_uart_valid,
-			FRAME_ERROR  => open,
-			PARITY_ERROR => open
+			i_Clk       => i_clk,
+			i_RX_Serial => i_rs485_rx,
+			o_RX_DV     => rx_uart_valid,
+			o_RX_Byte   => rx_uart_data
+		);
+
+	uart_tx : entity work.UART_TX
+		generic map(
+			g_CLKS_PER_BIT => G_CLK_FREQ / G_BAUD_RATE
+		)
+		port map(
+			i_Clk       => i_clk,
+			i_TX_DV     => tx_fifo_valid,
+			i_TX_Byte   => tx_uart_data,
+			o_TX_Active => tx_uart_active,
+			o_TX_Serial => o_rs485_tx,
+			o_TX_Done   => open
 		);
 
 	o_rx_valid    <= rx_fifo_valid;
@@ -82,7 +85,7 @@ begin
 			valid => rx_fifo_valid
 		);
 
-	tx_fifo_read  <= tx_fifo_valid and tx_uart_ready;
+	tx_fifo_read  <= tx_fifo_valid and (not tx_uart_active);
 	tx_fifo_write <= i_tx_valid and (not tx_fifo_full);
 	o_tx_ready    <= not tx_fifo_full;
 

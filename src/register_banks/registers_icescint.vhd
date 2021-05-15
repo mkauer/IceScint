@@ -35,7 +35,7 @@ architecture RTL of registers_icescint is
 	constant ADDR_UDAQ_TX      : integer := 16#0102#;
 	constant ADDR_UDAQ_FLAGS   : integer := 16#0104#;
 	constant ADDR_UDAQ_RX_LOW  : integer := 16#0110#; -- 8 registers from here
-	constant ADDR_UDAQ_RX_HIGH : integer := 16#0110#; -- 8 registers from here
+	constant ADDR_UDAQ_RX_HIGH : integer := 16#011f#;
 
 	constant ADDR_TEST_1   : integer := 16#f554#;
 	constant ADDR_TEST_2   : integer := 16#faaa#;
@@ -65,7 +65,7 @@ architecture RTL of registers_icescint is
 	signal test : std_logic := '0';
 begin
 
-	ebi_addr   <= to_integer(unsigned(i_ebi_addr));
+	ebi_addr   <= to_integer(unsigned(i_ebi_addr(i_ebi_addr'left downto 1) & '0'));
 	ebi_addr_3 <= to_integer(unsigned(i_ebi_addr(3 downto 1)));
 
 	-- uDAQs -------------------------------------------------------------------
@@ -157,7 +157,6 @@ begin
 		reg_udaq_status when ADDR_UDAQ_STATUS,
 		reg_udaq_flags when ADDR_UDAQ_FLAGS,
 		reg_udaq_tx when ADDR_UDAQ_TX,
-		--		reg_udaq_rx(ebi_addr_3) when (ADDR_UDAQ_RX to (ADDR_UDAQ_RX + 16#f#)),
 		reg_udaq_rx(ebi_addr_3) when ADDR_UDAQ_RX_LOW to ADDR_UDAQ_RX_HIGH,
 		-- TEST registers
 		reg_test_1 when ADDR_TEST_1,
