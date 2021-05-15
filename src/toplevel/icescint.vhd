@@ -265,28 +265,26 @@ begin
 	----------------------------------------------------------------------------
 
 	gen_udaq_tx : for i in 0 to NUM_UDAQ - 1 generate
-		signal fifo_full  : std_logic;
-		signal fifo_valid : std_logic;
-		signal fifo_write : std_logic;
-		signal fifo_read  : std_logic;
+		signal uart : std_logic;
 	begin
-		fifo_write <= regs2user.udaq_tx_valid(i) and (not fifo_full);
-		fifo_read  <= regs2user.udaq_rx_ready(i) and fifo_valid;
-
-		user2regs.udaq_tx_ready(i) <= not fifo_full;
-		user2regs.udaq_rx_valid(i) <= fifo_valid;
-
-		fifo_tx : entity work.udaq_tx_fifo
+		udaq_rs485 : entity work.udaq_rs485
+			generic map(
+				G_CLK_FREQ  => 100000000,
+				G_BAUD_RATE => 30000000
+			)
 			port map(
-				clk   => sys_clk,
-				srst  => sys_rst,
-				din   => regs2user.udaq_tx_data,
-				wr_en => fifo_write,
-				rd_en => fifo_read,
-				dout  => user2regs.udaq_rx_data(i),
-				full  => fifo_full,
-				empty => open,
-				valid => fifo_valid
+				i_clk         => sys_clk,
+				i_rst         => sys_rst,
+				i_tx_data     => regs2user.udaq_tx_data,
+				i_tx_valid    => regs2user.udaq_tx_valid(i),
+				o_tx_ready    => user2regs.udaq_tx_ready(i),
+				o_rx_data     => user2regs.udaq_rx_data(i),
+				o_rx_valid    => user2regs.udaq_rx_valid(i),
+				i_rx_ready    => regs2user.udaq_rx_ready(i),
+				o_rx_overflow => user2regs.udaq_rx_overflow(i),
+				o_rs485_tx    => uart,
+				o_rs485_en    => open,
+				i_rs485_rx    => uart
 			);
 	end generate;
 

@@ -4,3 +4,6 @@
 [submodule "lib/noasic"]
 	path = lib/noasic
 	url = https://github.com/noasic/noasic.git
+[submodule "lib/uart-for-fpga"]
+	path = lib/uart-for-fpga
+	url = https://github.com/jakubcabal/uart-for-fpga

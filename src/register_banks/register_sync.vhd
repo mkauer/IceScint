@@ -4,11 +4,10 @@ use ieee.numeric_std.all;
 
 entity register_sync is
 	generic(
-		G_INVERT_RWCS : boolean          := true;
-		G_DATA_WIDTH  : natural          := 16;
-		G_ADDR_WIDTH  : natural          := 16;
-		G_GUARD_FFS   : positive         := 1;
-		G_BANK        : std_logic_vector := ""
+		G_INVERT_RWCS : boolean  := true;
+		G_DATA_WIDTH  : natural  := 16;
+		G_ADDR_WIDTH  : natural  := 16;
+		G_GUARD_FFS   : positive := 1
 	);
 	port(
 		i_clk       : in  std_logic;
@@ -19,7 +18,6 @@ entity register_sync is
 		i_ebi_cs    : in  std_logic;
 		i_ebi_addr  : in  std_logic_vector(G_ADDR_WIDTH - 1 downto 0);
 		i_ebi_data  : in  std_logic_vector(G_DATA_WIDTH - 1 downto 0);
-		i_ebi_bank  : in  std_logic_vector(G_BANK'range);
 		-- to register bank
 		o_reading   : out std_logic;    -- high during a read -> do not update registers
 		o_read      : out std_logic;    -- pulsed at the end of the read strobe
@@ -40,7 +38,6 @@ architecture RTL of register_sync is
 		end if;
 	end function SYNC_INIT;
 
-	signal bank_sync  : std_logic_vector(G_BANK'range);
 	signal read_sync  : std_logic;
 	signal write_sync : std_logic;
 	signal cs_sync    : std_logic;
@@ -51,18 +48,6 @@ architecture RTL of register_sync is
 
 	signal addr_sync : std_logic_vector(G_ADDR_WIDTH - 1 downto 0);
 begin
-	sync_bank : entity work.vector_synchronizer
-		generic map(
-			G_DATA_WIDTH    => G_BANK'length,
-			G_INIT_VALUE    => (others => '0'),
-			G_NUM_GUARD_FFS => G_GUARD_FFS
-		)
-		port map(
-			i_reset => i_rst,
-			i_clk   => i_clk,
-			i_data  => i_ebi_bank,
-			o_data  => bank_sync
-		);
 
 	sync_read : entity work.synchronizer
 		generic map(
@@ -79,7 +64,7 @@ begin
 	sync_write : entity work.synchronizer
 		generic map(
 			G_INIT_VALUE    => SYNC_INIT,
-			G_NUM_GUARD_FFS => G_GUARD_FFS + 1 -- more delay so addr and data can settle
+			G_NUM_GUARD_FFS => G_GUARD_FFS + 2 -- one more than address
 		)
 		port map(
 			i_reset => i_rst,
@@ -100,17 +85,9 @@ begin
 			o_data  => cs_sync
 		);
 
-	p_selected : process(all)
-	begin
-		if (cs_sync = '1' and bank_sync = G_BANK) then
-			selected <= '1';
-		else
-			selected <= '0';
-		end if;
-	end process;
-
-	read_sel  <= read_sync and selected;
-	write_sel <= write_sync and selected;
+	selected  <= cs_sync xor SYNC_INIT;
+	read_sel  <= (read_sync xor SYNC_INIT) and selected;
+	write_sel <= (write_sync xor SYNC_INIT) and selected;
 
 	-- read / write outputs
 
@@ -147,7 +124,7 @@ begin
 	sync_addr : entity work.vector_synchronizer
 		generic map(
 			G_DATA_WIDTH    => G_ADDR_WIDTH,
-			G_INIT_VALUE    => (others => '0'),
+			G_INIT_VALUE    => (G_ADDR_WIDTH - 1 downto 0 => '0'),
 			G_NUM_GUARD_FFS => G_GUARD_FFS
 		)
 		port map(
@@ -175,7 +152,7 @@ begin
 	sync_data : entity work.vector_synchronizer
 		generic map(
 			G_DATA_WIDTH    => G_DATA_WIDTH,
-			G_INIT_VALUE    => (others => '0'),
+			G_INIT_VALUE    => (G_DATA_WIDTH - 1 downto 0 => '0'),
 			G_NUM_GUARD_FFS => 1
 		)
 		port map(
