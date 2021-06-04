@@ -30,12 +30,15 @@ package types is
 		udaq_rx_valid    : std_logic_vector(NUM_uDAQ - 1 downto 0);
 		udaq_rx_overflow : std_logic_vector(NUM_uDAQ - 1 downto 0);
 		udaq_tx_ready    : std_logic_vector(NUM_uDAQ - 1 downto 0);
+
+		irigb_sec_of_day : std_logic_vector(16 downto 0);
 	end record;
 
 	type regs2user_t is record
 		udaq_tx_data  : std_logic_vector(7 downto 0);
 		udaq_tx_valid : std_logic_vector(NUM_uDAQ - 1 downto 0);
 		udaq_rx_ready : std_logic_vector(NUM_uDAQ - 1 downto 0);
+		udaq_loopback : std_logic_vector(NUM_uDAQ - 1 downto 0);
 	end record;
 
 	--	function reverse_bits(p_input : std_logic_vector) return std_logic_vector;

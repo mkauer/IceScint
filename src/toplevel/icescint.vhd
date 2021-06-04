@@ -79,6 +79,7 @@ entity icescint is
 		o_scl                 : out   std_logic                           := '1';
 		o_sda_out             : out   std_logic                           := '1';
 		i_sda_in              : in    std_logic;
+		o_timing_signal       : out   std_logic                           := '0';
 		ignore                : out   bit                                 := '0' -- because VDHL does not allow trailing commas
 	);
 end icescint;
@@ -104,6 +105,9 @@ architecture behaviour of icescint is
 	signal adc_refclk         : std_logic;
 	signal adc_rst            : std_logic;
 
+	signal irigb_sync : std_logic;
+	signal irigb_pps  : std_logic;
+
 	-- registers
 	signal sys_reg_reading : std_logic;
 	signal sys_reg_read    : std_logic;
@@ -113,6 +117,21 @@ architecture behaviour of icescint is
 
 	signal user2regs : user2regs_t;
 	signal regs2user : regs2user_t;
+
+	component irig is
+		port(
+			clk_10mhz  : in  std_logic;
+			rst        : in  std_logic;
+			irigb      : in  std_logic;
+			pps        : out std_logic;
+			ts_second  : out std_logic_vector(5 downto 0);
+			ts_minute  : out std_logic_vector(5 downto 0);
+			ts_hour    : out std_logic_vector(4 downto 0);
+			ts_day     : out std_logic_vector(8 downto 0);
+			ts_year    : out std_logic_vector(6 downto 0);
+			ts_sec_day : out std_logic_vector(16 downto 0)
+		);
+	end component;
 
 	----------------------------------------------------------------------------
 	-- LEGACY BELOW
@@ -264,29 +283,67 @@ begin
 	-- uDAQs
 	----------------------------------------------------------------------------
 
-	gen_udaq_tx : for i in 0 to NUM_UDAQ - 1 generate
-		signal uart : std_logic;
-	begin
-		udaq_rs485 : entity work.udaq_rs485
-			generic map(
-				G_CLK_FREQ  => 100000000,
-				G_BAUD_RATE => 30000000
-			)
-			port map(
-				i_clk         => sys_clk,
-				i_rst         => sys_rst,
-				i_tx_data     => regs2user.udaq_tx_data,
-				i_tx_valid    => regs2user.udaq_tx_valid(i),
-				o_tx_ready    => user2regs.udaq_tx_ready(i),
-				o_rx_data     => user2regs.udaq_rx_data(i),
-				o_rx_valid    => user2regs.udaq_rx_valid(i),
-				i_rx_ready    => regs2user.udaq_rx_ready(i),
-				o_rx_overflow => user2regs.udaq_rx_overflow(i),
-				o_rs485_tx    => uart,
-				o_rs485_en    => open,
-				i_rs485_rx    => uart
-			);
-	end generate;
+	--	gen_udaq_tx : for i in 0 to NUM_UDAQ - 1 generate
+	--		signal uart : std_logic;
+	--	begin
+	--		udaq_rs485 : entity work.udaq_rs485
+	--			generic map(
+	--				G_CLK_FREQ  => 100000000,
+	--				G_BAUD_RATE => 30000000
+	--			)
+	--			port map(
+	--				i_clk         => sys_clk,
+	--				i_rst         => sys_rst,
+	--				i_tx_data     => regs2user.udaq_tx_data,
+	--				i_tx_valid    => regs2user.udaq_tx_valid(i),
+	--				o_tx_ready    => user2regs.udaq_tx_ready(i),
+	--				o_rx_data     => user2regs.udaq_rx_data(i),
+	--				o_rx_valid    => user2regs.udaq_rx_valid(i),
+	--				i_rx_ready    => regs2user.udaq_rx_ready(i),
+	--				o_rx_overflow => user2regs.udaq_rx_overflow(i),
+	--				i_loopback_en => regs2user.udaq_loopback(i),
+	--				o_rs485_tx    => uart,
+	--				o_rs485_en    => o_panel_rs485_en(i),
+	--				i_rs485_rx    => uart
+	--				--				o_rs485_tx    => o_panel_rs485_out(i),
+	--				--				o_rs485_en    => o_panel_rs485_en(i),
+	--				--				i_rs485_rx    => i_panel_rs485_in(i)
+	--			);
+	--	end generate;
+
+	----------------------------------------------------------------------------
+	-- IRIG-B timing
+	----------------------------------------------------------------------------
+
+	irig_sync : entity work.synchronizer
+		generic map(
+			G_INIT_VALUE    => '0',
+			G_NUM_GUARD_FFS => 2
+		)
+		port map(
+			i_reset => sys_rst,
+			i_clk   => sys_clk,
+			i_data  => i_wr_pps,
+			o_data  => irigb_sync
+		);
+
+	irig_decoder : irig
+		port map(
+			clk_10mhz  => sys_clk,
+			rst        => sys_rst,
+			irigb      => irigb_sync,
+			pps        => irigb_pps,
+			ts_sec_day => user2regs.irigb_sec_of_day
+		);
+
+	timing_gen : entity work.timing_gen
+		port map(
+			i_clk     => sys_clk,
+			i_rst     => sys_rst,
+			i_pps     => irigb_pps,
+			i_sec_day => user2regs.irigb_sec_of_day,
+			o_timing  => o_timing_signal
+		);
 
 	----------------------------------------------------------------------------
 	-- Register Interface
@@ -327,270 +384,4 @@ begin
 			i_user2regs => user2regs,
 			o_regs2user => regs2user
 		);
-
-		--	x1 : entity work.smcBusWrapper
-		--		port map(
-		--			chipSelect           => i_ebi_select,
-		--			addressAsync         => i_ebi_address,
-		--			controlRead          => i_ebi_read,
-		--			controlWrite         => i_ebi_write,
-		--			reset                => triggerSerdesClocks.rst_div8,
-		--			busClock             => triggerSerdesClocks.clk_118_serdes_div8,
-		--			addressAndControlBus => addressAndControlBus
-		--		);
-		--
-		--	x11 : entity work.eventFifoSystem
-		--		port map(
-		--			trigger            => trigger,
-		--			rateCounterTimeOut => rateCounterTimeOut,
-		--			irq2arm            => o_ebi_irq,
-		--			triggerTiming      => triggerTiming,
-		--			drs4AndAdcData     => drs4AndAdcData,
-		--			internalTiming     => internalTiming,
-		--			gpsTiming          => gpsTiming,
-		--			whiteRabbitTiming  => whiteRabbitTiming,
-		--			pixelRateCounter   => pixelRates,
-		--			registerRead       => eventFifoSystem_0r,
-		--			registerWrite      => eventFifoSystem_0w
-		--		);
-		--
-		--	x14a : entity work.internalTiming
-		--		generic map(globalClockRate_kHz)
-		--		port map(
-		--			clock_enables => internalTiming,
-		--			registerRead  => internalTiming_0r,
-		--			registerWrite => internalTiming_0w
-		--		);
-		--
-		--	x14c : entity work.whiteRabbitTiming
-		--		generic map(
-		--			G_CLOCK_PERIOD => 8.333333333 ns
-		--		)
-		--		port map(
-		--			i_wr_pps          => i_wr_pps,
-		--			i_wr_clock        => '0',
-		--			internalTiming    => internalTiming,
-		--			whiteRabbitTiming => whiteRabbitTiming,
-		--			registerRead      => whiteRabbitTiming_0r,
-		--			registerWrite     => whiteRabbitTiming_0w
-		--		);
-		--
-		--	triggerDRS4 <= trigger.triggerDelayed or trigger.softTrigger;
-		--
-		--	x16 : entity work.drs4adc
-		--		port map(
-		--			address        => o_radio_drs4_address,
-		--			notReset0      => o_radio_drs4_resetn,
-		--			denable0       => o_radio_drs4_denable,
-		--			dwrite0        => o_radio_drs4_dwrite,
-		--			rsrload0       => o_radio_drs4_rsrload,
-		--			miso0          => i_radio_drs4_srout(0),
-		--			mosi0          => o_radio_drs4_srin,
-		--			srclk0         => o_radio_drs4_srclk,
-		--			dtap0          => i_radio_drs4_dtap(0),
-		--			plllck0        => i_radio_drs4_plllock(0),
-		--			deadTime       => deadTime,
-		--			trigger        => triggerDRS4,
-		--			internalTiming => internalTiming,
-		--			adcClocks      => adcClocks,
-		--			drs4_0r        => drs4_0r,
-		--			drs4_0w        => drs4_0w,
-		--			nCSA0          => o_radio_adc_csan,
-		--			nCSB0          => o_radio_adc_csbn,
-		--			mosi           => o_radio_adc_sdi,
-		--			sclk           => o_radio_adc_sck,
-		--			enc0           => o_radio_adc_refclk,
-		--			adcDataA_p0    => i_radio_adc_data_p(0),
-		--			adcDataA_n0    => i_radio_adc_data_n(0),
-		--			drs4AndAdcData => drs4AndAdcData(0),
-		--			ChannelID      => "00",
-		--			fifoemptyout   => fifo(1 downto 0),
-		--			fifoemptyinA   => fifo(3 downto 2),
-		--			fifoemptyinB   => fifo(5 downto 4),
-		--			registerRead   => ltm9007_14_0r,
-		--			registerWrite  => ltm9007_14_0w
-		--		);
-		--
-		--	x16b : entity work.drs4adc
-		--		port map(
-		--			address        => open,
-		--			notReset0      => open,
-		--			denable0       => open,
-		--			dwrite0        => open,
-		--			rsrload0       => open,
-		--			miso0          => i_radio_drs4_srout(1),
-		--			mosi0          => open,
-		--			srclk0         => open,
-		--			dtap0          => i_radio_drs4_dtap(1),
-		--			plllck0        => i_radio_drs4_plllock(1),
-		--			deadTime       => open,
-		--			trigger        => triggerDRS4,
-		--			internalTiming => internalTiming,
-		--			adcClocks      => adcClocks,
-		--			drs4_0r        => drs4_1r,
-		--			drs4_0w        => drs4_0w,
-		--			nCSA0          => open,
-		--			nCSB0          => open,
-		--			mosi           => open,
-		--			sclk           => open,
-		--			enc0           => open,
-		--			adcDataA_p0    => i_radio_adc_data_p(1),
-		--			adcDataA_n0    => i_radio_adc_data_n(1),
-		--			drs4AndAdcData => drs4AndAdcData(1),
-		--			ChannelID      => "01",
-		--			fifoemptyout   => fifo(3 downto 2),
-		--			fifoemptyinA   => fifo(1 downto 0),
-		--			fifoemptyinB   => fifo(5 downto 4),
-		--			registerRead   => ltm9007_14_1r,
-		--			registerWrite  => ltm9007_14_0w
-		--		);
-		--
-		--	x16c : entity work.drs4adc
-		--		port map(
-		--			address        => open,
-		--			notReset0      => open,
-		--			denable0       => open,
-		--			dwrite0        => open,
-		--			rsrload0       => open,
-		--			miso0          => i_radio_drs4_srout(2),
-		--			mosi0          => open,
-		--			srclk0         => open,
-		--			dtap0          => i_radio_drs4_dtap(2),
-		--			plllck0        => i_radio_drs4_plllock(2),
-		--			deadTime       => open,
-		--			trigger        => triggerDRS4,
-		--			internalTiming => internalTiming,
-		--			adcClocks      => adcClocks,
-		--			drs4_0r        => drs4_2r,
-		--			drs4_0w        => drs4_0w,
-		--			nCSA0          => open,
-		--			nCSB0          => open,
-		--			mosi           => open,
-		--			sclk           => open,
-		--			enc0           => open,
-		--			adcDataA_p0    => i_radio_adc_data_p(2),
-		--			adcDataA_n0    => i_radio_adc_data_n(2),
-		--			drs4AndAdcData => drs4AndAdcData(2),
-		--			ChannelID      => "10",
-		--			fifoemptyout   => fifo(5 downto 4),
-		--			fifoemptyinA   => fifo(3 downto 2),
-		--			fifoemptyinB   => fifo(1 downto 0),
-		--			registerRead   => ltm9007_14_2r,
-		--			registerWrite  => ltm9007_14_0w
-		--		);
-		--
-		--	x13 : entity work.dac088s085_x3
-		--		port map(
-		--			notSync       => o_radio_dac_syncn,
-		--			mosi          => o_radio_dac_do,
-		--			sclk          => o_radio_dac_sck,
-		--			registerRead  => dac088s085_x3_0r,
-		--			registerWrite => dac088s085_x3_0w
-		--		);
-		--
-		--	x15 : entity work.ad56x1
-		--		port map(
-		--			notSync0      => o_vcxo_25_syncn,
-		--			notSync1      => o_vcxo_10_syncn,
-		--			mosi          => o_vcxo_25_do,
-		--			sclk          => o_vcxo_25_sck,
-		--			registerRead  => ad56x1_0r,
-		--			registerWrite => ad56x1_0w
-		--		);
-		--
-		--	x18 : entity work.iceTad
-		--		port map(
-		--			nP24VOn           => o_panel_24v_on_n,
-		--			nP24VOnTristate   => o_panel_24v_tri,
-		--			rs485In           => i_panel_rs485_in,
-		--			rs485Out          => o_panel_rs485_out,
-		--			rs485DataTristate => open,
-		--			rs485DataEnable   => o_panel_rs485_en,
-		--			registerRead      => iceTad_0r,
-		--			registerWrite     => iceTad_0w
-		--		);
-		--
-		--	x19 : entity work.panelPower
-		--		port map(
-		--			nPowerOn      => o_radio_power24n,
-		--			registerRead  => panelPower_0r,
-		--			registerWrite => panelPower_0w
-		--		);
-		--
-		--	x20 : entity work.tmp05
-		--		port map(
-		--			tmp05Pin      => io_pin_tmp05,
-		--			registerRead  => tmp05_0r,
-		--			registerWrite => tmp05_0w
-		--		);
-		--
-		--	---  Read fast aller daten von Kanal 0 
-		--	ltm9007_14r.testMode                   <= ltm9007_14_0r.testMode;
-		--	ltm9007_14r.testPattern                <= ltm9007_14_0r.testPattern;
-		--	ltm9007_14r.bitslipPattern             <= ltm9007_14_0r.bitslipPattern;
-		--	ltm9007_14r.bitslipFailed              <= ltm9007_14_0r.bitslipFailed or ltm9007_14_1r.bitslipFailed or ltm9007_14_2r.bitslipFailed; -- alle 3 Kan�le verodert...
-		--	ltm9007_14r.offsetCorrectionRamAddress <= ltm9007_14_0r.offsetCorrectionRamAddress;
-		--	ltm9007_14r.offsetCorrectionRamData    <= ltm9007_14_0r.offsetCorrectionRamData;
-		--	ltm9007_14r.offsetCorrectionRamWrite   <= ltm9007_14_0r.offsetCorrectionRamWrite;
-		--	ltm9007_14r.fifoEmptyA                 <= ltm9007_14_0r.fifoEmptyA;
-		--	ltm9007_14r.fifoValidA                 <= ltm9007_14_0r.fifoValidA;
-		--	ltm9007_14r.fifoWordsA                 <= ltm9007_14_0r.fifoWordsA;
-		--	ltm9007_14r.baselineStart              <= ltm9007_14_0r.baselineStart;
-		--	ltm9007_14r.baselineEnd                <= ltm9007_14_0r.baselineEnd;
-		--	ltm9007_14r.debugChannelSelector       <= ltm9007_14_0r.debugChannelSelector;
-		--	ltm9007_14r.debugFifoControl           <= ltm9007_14_0r.debugFifoControl;
-		--	ltm9007_14r.testMode                   <= ltm9007_14_0r.testMode;
-		--	ltm9007_14r.debugFifoOut               <= ltm9007_14_0r.debugFifoOut;
-		--
-		--	x3 : entity work.registerInterface_iceScint
-		--		port map(
-		--			addressAndControlBus       => addressAndControlBus,
-		--			dataBusIn                  => i_ebi_data_in,
-		--			dataBusOut                 => o_ebi_data_out,
-		--			triggerTimeToRisingEdge_0r => triggerTimeToRisingEdge_0r,
-		--			triggerTimeToRisingEdge_0w => triggerTimeToRisingEdge_0w,
-		--			eventFifoSystem_0r         => eventFifoSystem_0r,
-		--			eventFifoSystem_0w         => eventFifoSystem_0w,
-		--			triggerDataDelay_0r        => triggerDataDelay_0r,
-		--			triggerDataDelay_0w        => triggerDataDelay_0w,
-		--			triggerDataDelay_1r        => triggerDataDelay_1r,
-		--			triggerDataDelay_1w        => triggerDataDelay_1w,
-		--			pixelRateCounter_0r_p0     => pixelRateCounter_0r,
-		--			pixelRateCounter_0w        => pixelRateCounter_0w,
-		--			dac088s085_x3_0r           => dac088s085_x3_0r,
-		--			dac088s085_x3_0w           => dac088s085_x3_0w,
-		--			gpsTiming_0r               => gpsTiming_0r,
-		--			gpsTiming_0w               => gpsTiming_0w,
-		--			whiteRabbitTiming_0r       => whiteRabbitTiming_0r,
-		--			whiteRabbitTiming_0w       => whiteRabbitTiming_0w,
-		--			internalTiming_0r          => internalTiming_0r,
-		--			internalTiming_0w          => internalTiming_0w,
-		--			ad56x1_0r                  => ad56x1_0r,
-		--			ad56x1_0w                  => ad56x1_0w,
-		--			drs4_0r                    => drs4_0r,
-		--			drs4_0w                    => drs4_0w,
-		--			ltm9007_14_0r              => ltm9007_14r,
-		--			ltm9007_14_0w              => ltm9007_14_0w,
-		--			triggerLogic_0r_p          => triggerLogic_0r,
-		--			triggerLogic_0w            => triggerLogic_0w,
-		--			iceTad_0r                  => iceTad_0r,
-		--			iceTad_0w                  => iceTad_0w,
-		--			panelPower_0r              => panelPower_0r,
-		--			panelPower_0w              => panelPower_0w,
-		--			tmp05_0r                   => tmp05_0r,
-		--			tmp05_0w                   => tmp05_0w,
-		--			i2c_control_r              => i2c_control_r,
-		--			i2c_control_w              => i2c_control_w,
-		--			clockConfig_debug_0w       => clockConfig_debug
-		--		);
-		--
-		--	Inst_I2CModule : entity work.I2CModule
-		--		port map(
-		--			clk           => triggerSerdesClocks.clk_118_serdes_div8,
-		--			scl           => o_scl,
-		--			sdaout        => o_sda_out,
-		--			sdaint        => i_sda_in,
-		--			registerRead  => i2c_control_r,
-		--			registerWrite => i2c_control_w
-		--		);
 end behaviour;

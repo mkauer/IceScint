@@ -34,8 +34,11 @@ architecture RTL of registers_icescint is
 	constant ADDR_UDAQ_STATUS  : integer := 16#0100#;
 	constant ADDR_UDAQ_TX      : integer := 16#0102#;
 	constant ADDR_UDAQ_FLAGS   : integer := 16#0104#;
+	constant ADDR_UDAQ_CONFIG  : integer := 16#0106#;
 	constant ADDR_UDAQ_RX_LOW  : integer := 16#0110#; -- 8 registers from here
 	constant ADDR_UDAQ_RX_HIGH : integer := 16#011f#;
+
+	constant ADDR_IRIGB_SECOFDAY : integer := 16#0200#;
 
 	constant ADDR_TEST_1   : integer := 16#f554#;
 	constant ADDR_TEST_2   : integer := 16#faaa#;
@@ -43,16 +46,17 @@ architecture RTL of registers_icescint is
 
 	signal reg_sys_clock_source : register_t;
 
-	signal reg_udaq_status : register_t;
-
+	signal reg_udaq_status      : register_t;
+	signal reg_udaq_tx          : register_t;
 	signal reg_udaq_flags       : register_t;
+	signal reg_udaq_config      : register_t;
+	signal reg_udaq_rx          : register_array_t(NUM_uDAQ - 1 downto 0);
 	signal reg_udaq_flags_clear : std_logic;
 	alias reg_udaq_flags_tx_full is reg_udaq_flags(15 downto 8);
 	alias reg_udaq_flags_rx_overflow is reg_udaq_flags(7 downto 0);
-	signal reg_udaq_rx          : register_array_t(NUM_uDAQ - 1 downto 0);
-	signal reg_udaq_tx          : register_t;
 	alias reg_udaq_tx_valid is reg_udaq_tx(15 downto 8);
 	alias reg_udaq_tx_data is reg_udaq_tx(7 downto 0);
+	alias reg_udaq_config_loopback is reg_udaq_config(7 downto 0);
 
 	signal reg_test_1   : register_t := x"0000";
 	signal reg_test_2   : register_t := x"0000";
@@ -84,6 +88,7 @@ begin
 
 	o_regs2user.udaq_tx_data  <= reg_udaq_tx_data;
 	o_regs2user.udaq_tx_valid <= reg_udaq_tx_valid;
+	o_regs2user.udaq_loopback <= reg_udaq_config_loopback;
 
 	gen_udaq_rx_data : for i in reg_udaq_rx'range generate
 		reg_udaq_rx(i)(15 downto 8) <= udaq_rx_valid;
@@ -157,7 +162,10 @@ begin
 		reg_udaq_status when ADDR_UDAQ_STATUS,
 		reg_udaq_flags when ADDR_UDAQ_FLAGS,
 		reg_udaq_tx when ADDR_UDAQ_TX,
+		reg_udaq_config when ADDR_UDAQ_CONFIG,
 		reg_udaq_rx(ebi_addr_3) when ADDR_UDAQ_RX_LOW to ADDR_UDAQ_RX_HIGH,
+		-- IRIGB
+		i_user2regs.irigb_sec_of_day(15 downto 0) when ADDR_IRIGB_SECOFDAY,
 		-- TEST registers
 		reg_test_1 when ADDR_TEST_1,
 		reg_test_2 when ADDR_TEST_2,
@@ -179,11 +187,12 @@ begin
 				reg_udaq_tx_valid    <= reg_udaq_tx_valid and (not i_user2regs.udaq_tx_ready);
 				if i_write = '1' then
 					case ebi_addr is
-						when ADDR_UDAQ_TX    => reg_udaq_tx <= i_ebi_data;
-						when ADDR_UDAQ_FLAGS => reg_udaq_flags_clear <= '1';
-						when ADDR_TEST_1     => reg_test_1 <= i_ebi_data;
-						when ADDR_TEST_2     => reg_test_2 <= i_ebi_data;
-						when others          => null;
+						when ADDR_UDAQ_TX     => reg_udaq_tx <= i_ebi_data;
+						when ADDR_UDAQ_FLAGS  => reg_udaq_flags_clear <= '1';
+						when ADDR_UDAQ_CONFIG => reg_udaq_config <= i_ebi_data;
+						when ADDR_TEST_1      => reg_test_1 <= i_ebi_data;
+						when ADDR_TEST_2      => reg_test_2 <= i_ebi_data;
+						when others           => null;
 					end case;
 				end if;
 			end if;

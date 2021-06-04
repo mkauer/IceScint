@@ -12,3 +12,5 @@
 
 ## TODO (check with others)
 - remove Trigger Timing, DRS4 Sampling, DRS4 Charge, DRS4 Baseline, Pixel Rate Counter, GPS
+- add RS485 loopback
+- test RS485 enable / rx block

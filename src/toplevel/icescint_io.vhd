@@ -221,16 +221,18 @@ architecture behaviour of icescint_io is
 	signal sdaout : std_logic;
 	signal sdaint : std_logic;
 
+	signal timing_signal : std_logic;
+
 	-- signal wr_clock : std_logic;
 	signal wr_pps : std_logic;
 begin
 
 	-- debug signals
 	IO_LVDS_IO_N(5 downto 2) <= x"f";
-	IO_LVDS_IO_P(5)          <= I_EBI1_MCK;
-	IO_LVDS_IO_P(4)          <= ebi_address(0);
-	IO_LVDS_IO_P(3)          <= ebi_data_in(0);
-	IO_LVDS_IO_P(2)          <= I_EBI1_NRD;
+	IO_LVDS_IO_P(5)          <= timing_signal;
+	IO_LVDS_IO_P(4)          <= clk_10m_wr;
+	IO_LVDS_IO_P(3)          <= wr_pps;
+	IO_LVDS_IO_P(2)          <= timing_signal;
 
 	-- LEDs, must be assigned so bitgen does not fail
 	IO_LVDS_IO_P(0) <= leds(1);
@@ -613,6 +615,7 @@ begin
 			o_scl                 => sclint,
 			o_sda_out             => sdaout,
 			i_sda_in              => sdaint,
+			o_timing_signal       => timing_signal,
 			ignore                => open
 		);
 

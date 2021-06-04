@@ -11,10 +11,14 @@ lib = vu.add_library("lib")
 
 # Add all files ending in .vhd in current working directory to library
 lib.add_source_files("src/*.vhd")
+lib.add_source_files("lib/*.vhd")
 lib.add_source_files("../lib/noasic/components/*.vhd")
+lib.add_source_files("../lib/nandland/*.vhd")
 lib.add_source_files("../src/util/*.vhd")
+lib.add_source_files("../src/misc/timing_gen/*.vhd")
 lib.add_source_files("../src/types/types.vhd")
 lib.add_source_files("../src/register_banks/*.vhd")
+lib.add_source_files("../src/udaq/*.vhd")
 
 
 # Run vunit function
