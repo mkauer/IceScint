@@ -30,6 +30,12 @@ begin
 		);
 
 	main : process
+		procedure pulse_pps is
+		begin
+			i_pps <= '1';
+			wait for CLK_PERIOD;
+			i_pps <= '0';
+		end procedure;
 	begin
 		test_runner_setup(runner, runner_cfg);
 
@@ -37,7 +43,13 @@ begin
 		wait for CLK_PERIOD * 10;
 		i_rst <= '0';
 
-		wait for CLK_PERIOD * 5000;
+		wait for CLK_PERIOD * 300;
+		pulse_pps;
+
+		for i in 0 to 20 loop
+			wait for 100 us - CLK_PERIOD;
+			pulse_pps;
+		end loop;
 
 		test_runner_cleanup(runner);
 	end process;

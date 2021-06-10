@@ -21,7 +21,7 @@ end entity timing_encoder;
 
 architecture RTL of timing_encoder is
 	signal encoded : std_ulogic := '0';
-	signal ready   : std_ulogic := '1';
+	signal ready   : std_ulogic := '0';
 
 	signal dbg_regular : std_logic := '0';
 	signal dbg_data    : std_logic := '0';
@@ -42,10 +42,10 @@ begin
 				ctr_os  := 0;
 				ctr_reg := 0;
 				encoded <= '0';
-				ready   <= '1';
+				ready   <= '0';
 			else
 				if idle then
-					ready   <= not i_valid;
+					ready   <= '0';
 					ctr_os  := 0;
 					ctr_reg := 0;
 					if i_valid = '1' then
