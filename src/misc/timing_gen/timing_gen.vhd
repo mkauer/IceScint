@@ -85,12 +85,10 @@ begin
 			if index_top > msg_data'left then
 				index_top := msg_data'left;
 			end if;
-			checksum  := ("0" & checksum(3 downto 0)) + unsigned(msg_data(index_top downto index)) + checksum(4);
+			checksum  := ("0" & checksum(3 downto 0)) + unsigned(msg_data(index_top downto index)) + ("0000" & checksum(4));
 			index     := index + 4;
 		end loop;
-		while checksum(4) = '1' loop
-			checksum := ("0" & checksum(3 downto 0)) + checksum(4);
-		end loop;
+		checksum     := ("0" & checksum(3 downto 0)) + ("0000" & checksum(4));
 		msg_checksum <= std_logic_Vector(checksum(3 downto 0));
 	end process;
 
