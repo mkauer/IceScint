@@ -96,7 +96,7 @@ begin
 			type state_t is (IDLE, STARTING, ACTIVE);
 			variable v_state : state_t;
 			constant C_DELAY_START : natural := 40;
-			constant C_DELAY_IDLE : natural := 300000;
+			constant C_DELAY_IDLE : natural := 12000;
 			variable v_ctr_start : natural range 0 to C_DELAY_START;
 			variable v_ctr_idle : natural range 0 to C_DELAY_IDLE;
 		begin
