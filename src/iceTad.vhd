@@ -60,6 +60,8 @@ architecture Behavioral of iceTad is
 	signal fifoRead  : std_logic_vector(7 downto 0);
 	signal fifoWrite : std_logic_vector(7 downto 0);
 
+	signal tx_delayed_start : std_logic_vector(7 downto 0);
+	signal tx_module_busy : std_logic_vector(7 downto 0);
 begin
 
 	registerRead.powerOn <= registerWrite.powerOn;
@@ -77,30 +79,90 @@ begin
 		x0 : entity work.uart_RxTx_V2
 			generic map(
 				Quarz_Taktfrequenz => 120000000,
-				--			Baudrate => 9600
 				Baudrate => 3000000
-				--			Baudrate => 57600
-				--			Baudrate => 57570
 			)
 			port map(
 				CLK => registerWrite.clock,
 				RXD => rs485DataIn_intern(i),
 				TXD => rs485Out(i),
-				--RX_Data => registerRead.rs485Data(i),
 				RX_Data  => fifoIn(i),
 				TX_Data  => registerWrite.rs485Data(i),
 				RX_Busy  => rxBusy(i),
-				TX_Busy  => txBusy(i),
-				TX_Start => registerWrite.rs485TxStart(i)
+				TX_Busy  => tx_module_busy(i),
+				TX_Start => tx_delayed_start(i)
 			);
-
-		--rs485DataTristate(i) <= not(txBusy(i));
-		--rs485DataEnable(i) <= txBusy(i);
-		rs485DataTristate(i) <= not(softTxEnable(i)) when softTxMask(i) = '1' else
-		not(txBusy(i));
-		rs485DataEnable(i) <= softTxEnable(i) when softTxMask(i) = '1' else
-		txBusy(i);
-
+		
+		p_start : process(registerWrite.clock)
+			type state_t is (IDLE, STARTING, ACTIVE);
+			variable v_state : state_t;
+			constant C_DELAY_START : natural := 40;
+			constant C_DELAY_IDLE : natural := 12000;
+			variable v_ctr_start : natural range 0 to C_DELAY_START;
+			variable v_ctr_idle : natural range 0 to C_DELAY_IDLE;
+		begin
+			if rising_edge(registerWrite.clock) then
+				if registerWrite.reset = '1' then
+					v_state := IDLE;
+					v_ctr_start := 0;
+					v_ctr_idle := 0;
+					tx_delayed_start(i) <= '0';
+					txBusy(i) <= '0';
+					rs485DataEnable(i) <= '0';
+				else
+					tx_delayed_start(i) <= '0';
+					-- start request
+					if registerWrite.rs485TxStart(i) = '1' then
+						if v_state = IDLE or v_state = STARTING then
+							v_state := STARTING;
+						elsif v_state = ACTIVE then
+							tx_delayed_start(i) <= '1';
+                            v_ctr_idle := 0;
+						end if;
+					end if;
+					-- reset idle counter when transmitting
+					if tx_module_busy(i) = '1' then
+						v_state := ACTIVE;
+						v_ctr_idle := 0;
+					end if;
+					-- count to idle state when active and not transmitting
+					if v_state = ACTIVE and tx_module_busy(i) = '0' then
+						if v_ctr_idle = C_DELAY_IDLE then
+							v_state := IDLE;
+						else
+							v_ctr_idle := v_ctr_idle + 1;
+						end if;
+					end if;
+					-- count to active state
+					if v_state = STARTING then
+						if v_ctr_start = C_DELAY_START then
+							v_state := ACTIVE;
+							tx_delayed_start(i) <= '1';
+						else
+							v_ctr_start := v_ctr_start + 1;
+						end if;
+					end if;
+					-- transmit enable
+					if v_state /= IDLE then
+						rs485DataEnable(i) <= '1';
+					else
+						rs485DataEnable(i) <= '0';
+					end if;
+					-- tx busy register
+					if v_state = STARTING or v_state = ACTIVE then
+						txBusy(i) <= '1';
+					else
+						txBusy(i) <= '0';
+					end if;
+					-- reset inactive counters
+					if v_state = IDLE or v_state = STARTING then
+						v_ctr_idle := 0;
+					else
+						v_ctr_start := 0;
+					end if;
+				end if;
+			end if;
+		end process;
+		
 		x2 : entity work.rs485fifo
 			port map(
 				clk        => registerWrite.clock,

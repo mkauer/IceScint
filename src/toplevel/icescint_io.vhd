@@ -14,9 +14,9 @@ entity icescint_io is
 		-- with FPGA configuration time
 
 		-- all oscillators use 2.5V CMOS I/O
-		I_QOSC1_OUT       : in    std_logic; -- 25 MHZ, NOT USED
+		I_QOSC1_OUT       : in    std_logic; -- NOT USED
 		O_QOSC1_DAC_SYNCn : out   std_logic;
-		I_QOSC2_OUT       : in    std_logic; -- 10 MHz
+		I_QOSC2_OUT       : in    std_logic;
 		O_QOSC2_ENA       : out   std_logic; -- NOT USED, QOSC2 does not have enable input
 		O_QOSC2_DAC_SYNCn : out   std_logic;
 		O_QOSC2_DAC_SCKL  : out   std_logic;
@@ -149,8 +149,8 @@ entity icescint_io is
 		IO_sda            : inout std_logic;
 		IO_scl            : inout std_logic;
 		-- test signals, NOT AVAILABLE for XC6SLX100FGG484-2 !!!
-		IO_LVDS_IO_P      : out   std_logic_vector(5 downto 0); -- LVDS bidir. test port
-		IO_LVDS_IO_N      : out   std_logic_vector(5 downto 0); -- LVDS bidir. test port
+		IO_LVDS_IO_P      : inout std_logic_vector(5 downto 0); -- LVDS bidir. test port
+		IO_LVDS_IO_N      : inout std_logic_vector(5 downto 0); -- LVDS bidir. test port
 		O_NOT_USED_GND    : out   std_logic_vector(3 downto 0)
 	);
 end icescint_io;
@@ -215,7 +215,6 @@ architecture behaviour of icescint_io is
 	signal ebi_read     : std_logic;
 	signal ebi_write    : std_logic;
 	signal ebi_select   : std_logic;
-	signal ebi_mck      : std_logic;
 
 	signal panel_24v_on_n : std_logic_vector(0 to 7);
 	signal panel_24v_tri  : std_logic_vector(0 to 7);
@@ -224,188 +223,29 @@ architecture behaviour of icescint_io is
 	signal sdaout : std_logic;
 	signal sdaint : std_logic;
 
+	signal timing_signal : std_logic;
+	signal leds          : std_logic_vector(0 to 3) := (others => '0');
+
 	signal wr_clock : std_logic;
 	signal wr_pps   : std_logic;
 begin
 
+	-- debug signals
 	IO_LVDS_IO_N(5 downto 2) <= x"f";
-	IO_LVDS_IO_P(5)          <= I_EBI1_MCK;
-	IO_LVDS_IO_P(4)          <= ebi_address(0);
-	IO_LVDS_IO_P(3)          <= ebi_data_in(0);
-	IO_LVDS_IO_P(2)          <= I_EBI1_NRD;
+	IO_LVDS_IO_P(5)          <= timing_signal;
+	--	IO_LVDS_IO_P(4)          <= clk_10m_wr;
+	--	IO_LVDS_IO_P(3)          <= wr_pps;
+	IO_LVDS_IO_P(2)          <= timing_signal;
+
 	-- LEDs, must be assigned so bitgen does not fail
-	IO_LVDS_IO_P(1 downto 0) <= "00";
-	IO_LVDS_IO_N(1 downto 0) <= "00";
+	IO_LVDS_IO_P(0) <= leds(1);
+	IO_LVDS_IO_P(1) <= leds(3);
+	IO_LVDS_IO_N(0) <= leds(0);
+	IO_LVDS_IO_N(1) <= leds(2);
 
-	----------------------------------------------------------------------------
-	-- Clocks and Resets
-	----------------------------------------------------------------------------
+	-- LEDs
+	--	leds(1) <= sys_clock_select;
 
-	-- 10 MHz Oscillator -------------------------------------------------------
-
-	bufg_10m_osc : BUFG
-		port map(
-			O => clk_10m_osc,
-			I => I_QOSC2_OUT
-		);
-
-	rst_ext_async <= not I_PON_RESETn;
-
-	rst_sync_10m_osc : entity work.reset_synchronizer
-		generic map(
-			G_RELEASE_DELAY_CYCLES => 5
-		)
-		port map(
-			i_reset => rst_ext_async,
-			i_clk   => clk_10m_osc,
-			o_reset => rst_10m_osc
-		);
-
-	-- 10 MHz White Rabbit -----------------------------------------------------
-
-	bufg_10m_wr : BUFG
-		port map(
-			O => clk_10m_wr,
-			I => wr_clock
-		);
-
-	-- 10 MHz GPS --------------------------------------------------------------
-
-	bufg_10m_gps : BUFG
-		port map(
-			O => clk_10m_gps,
-			I => I_GPS_TIMEPULSE2
-		);
-
-	-- EBI MCK -----------------------------------------------------------------
-
-	bufg_ebi_mck : BUFG
-		port map(
-			O => ebi_mck,
-			I => I_EBI1_MCK
-		);
-
-	-- Platform Clock
-
-	DCM_CLKGEN_inst : DCM_CLKGEN
-		generic map(
-			CLKFXDV_DIVIDE  => 2,       -- CLKFXDV divide value (2, 4, 8, 16, 32)
-			CLKFX_DIVIDE    => 1,       -- Divide value - D - (1-256)
-			CLKFX_MD_MAX    => 12.0,    -- Specify maximum M/D ratio for timing anlysis
-			CLKFX_MULTIPLY  => 24,      -- Multiply value - M - (2-256)
-			CLKIN_PERIOD    => 0.0,     -- Input clock period specified in nS
-			SPREAD_SPECTRUM => "NONE",  -- Spread Spectrum mode "NONE", "CENTER_LOW_SPREAD", "CENTER_HIGH_SPREAD", "VIDEO_LINK_M0", "VIDEO_LINK_M1" or "VIDEO_LINK_M2" 
-			STARTUP_WAIT    => FALSE    -- Delay config DONE until DCM_CLKGEN LOCKED (TRUE/FALSE)
-		)
-		port map(
-			CLKFX     => clk_platform,  -- 1-bit output: Generated clock output
-			LOCKED    => plat_dcm_locked, -- 1-bit output: Locked output
-			CLKIN     => clk_10m_osc,   -- 1-bit input: Input clock
-			FREEZEDCM => '0',           -- 1-bit input: Prevents frequency adjustments to input clock
-			PROGCLK   => '0',           -- 1-bit input: Clock input for M/D reconfiguration
-			PROGDATA  => '0',           -- 1-bit input: Serial data input for M/D reconfiguration
-			PROGEN    => '0',           -- 1-bit input: Active high program enable
-			RST       => rst_10m_osc    -- 1-bit input: Reset input pin
-		);
-
-	plat_rst_input <= rst_10m_osc or (not plat_dcm_locked);
-
-	rst_sync_platform : entity work.reset_synchronizer
-		generic map(
-			G_RELEASE_DELAY_CYCLES => 5
-		)
-		port map(
-			i_reset => plat_rst_input,
-			i_clk   => clk_platform,
-			o_reset => rst_platform
-		);
-
-	----------------------------------------------------------------------------
-	-- Clock Detectors
-	----------------------------------------------------------------------------
-
-	clock_detector_wr : entity work.clock_detector
-		generic map(
-			G_DETECT_DIV    => 2,
-			G_TIMEOUT       => 63,
-			G_STABLE_THRESH => 7
-		)
-		port map(
-			i_clk    => clk_platform,
-			i_rst    => rst_platform,
-			i_detect => clk_10m_wr,
-			o_stable => plat_user2regs.clk_detect_wr
-		);
-
-	clock_detector_gps : entity work.clock_detector
-		generic map(
-			G_DETECT_DIV    => 2,
-			G_TIMEOUT       => 63,
-			G_STABLE_THRESH => 7
-		)
-		port map(
-			i_clk    => clk_platform,
-			i_rst    => rst_platform,
-			i_detect => clk_10m_gps,
-			o_stable => plat_user2regs.clk_detect_gps
-		);
-
-	clock_detector_ebi : entity work.clock_detector
-		generic map(
-			G_DETECT_DIV    => 8,
-			G_TIMEOUT       => 63,
-			G_STABLE_THRESH => 7
-		)
-		port map(
-			i_clk    => clk_platform,
-			i_rst    => rst_platform,
-			i_detect => ebi_mck,
-			o_stable => plat_user2regs.clk_detect_ebi
-		);
-
-	----------------------------------------------------------------------------
-	-- Platform Register Read
-	----------------------------------------------------------------------------
-
-	plat_ebi_read_async  <= (not I_EBI1_NCS2) and (not I_EBI1_NRD) and ebi_address(16);
-	plat_ebi_write_async <= (not I_EBI1_NCS2) and (not I_EBI1_NWE) and ebi_address(16);
-
-	sync_plat_ebi_read : entity work.synchronizer
-		generic map(
-			G_INIT_VALUE    => '0',
-			G_NUM_GUARD_FFS => 1
-		)
-		port map(
-			i_reset => rst_platform,
-			i_clk   => clk_platform,
-			i_data  => plat_ebi_read_async,
-			o_data  => plat_ebi_read
-		);
-
-	sync_plat_ebi_write : entity work.synchronizer
-		generic map(
-			G_INIT_VALUE    => '0',
-			G_NUM_GUARD_FFS => 1
-		)
-		port map(
-			i_reset => rst_platform,
-			i_clk   => clk_platform,
-			i_data  => plat_ebi_write_async,
-			o_data  => plat_ebi_write
-		);
-
-	registers_io : entity work.registers_io
-		port map(
-			i_clk       => clk_platform,
-			i_rst       => rst_platform,
-			i_read      => plat_ebi_read,
-			i_write     => plat_ebi_write,
-			i_ebi_addr  => ebi_address(15 downto 0),
-			i_ebi_data  => ebi_data_in,
-			o_ebi_data  => plat_ebi_data_out,
-			i_user2regs => plat_user2regs,
-			o_regs2user => plat_regs2user
-		);
 
 	----------------------------------------------------------------------------
 	-- IO buffers
@@ -481,9 +321,9 @@ begin
 				DIFF_TERM => true
 			)
 			port map(
-				O  => open,
 				I  => I_ADC_DCOA_P(i),
-				IB => I_ADC_DCOA_N(i)
+				IB => I_ADC_DCOA_N(i),
+				O  => open
 			);
 
 		ibufds_adc_dcob : IBUFDS
@@ -518,7 +358,7 @@ begin
 			port map(
 				IO => IO_EBI1_D(i),
 				O  => ebi_data_in(i),
-				I  => ebi_data_out_muxed(i),
+				I  => ebi_data_out(i),
 				T  => I_EBI1_NRD
 			);
 	end generate;
@@ -695,7 +535,7 @@ begin
 			i_panel_trigger       => I_PANEL_TRIGGER,
 			o_panel_24v_on_n      => panel_24v_on_n,
 			o_panel_24v_tri       => panel_24v_tri,
-			i_panel_rs485_in      => I_PANEL_RS485_RX,
+			o_panel_rs485_in      => I_PANEL_RS485_RX,
 			o_panel_rs485_out     => O_PANEL_RS485_TX,
 			o_panel_rs485_en      => O_PANEL_RS485_DE,
 			io_pin_tmp05          => IO_TEMPERATURE,
@@ -706,6 +546,7 @@ begin
 			o_scl                 => sclint,
 			o_sda_out             => sdaout,
 			i_sda_in              => sdaint,
+			o_timing_signal       => timing_signal,
 			ignore                => open
 		);
 end behaviour;
