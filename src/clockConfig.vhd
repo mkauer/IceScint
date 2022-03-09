@@ -72,7 +72,6 @@ architecture Behavioral of clockConfig is
 	signal reset_i0          : std_logic_vector(7 downto 0) := x"ff";
 	signal reset_i1          : std_logic_vector(7 downto 0) := x"ff";
 	signal reset_i2          : std_logic_vector(7 downto 0) := x"ff";
-	signal reset_i3          : std_logic_vector(7 downto 0) := x"ff";
 	signal clockErrorTrigger : std_logic                    := '0';
 	signal clockErrorAdc     : std_logic                    := '0';
 	--	signal clockErrorAll : std_logic := '0';
@@ -93,9 +92,6 @@ architecture Behavioral of clockConfig is
 
 	signal debugSync1 : clockConfig_debug_t;
 	signal debugSync2 : clockConfig_debug_t;
-
-	signal pll1_clko_div16_60 : std_logic := '0';
-
 begin
 	drs4RefClock <= refClock;
 	clockValid   <= dcm1_locked and pll1_locked_buf and pll1_locked;
@@ -199,6 +195,7 @@ begin
 			O => pll1_clk0_div8_120_global,
 			I => pll1_clk0_div8_120
 		);
+
 
 	bufpll_inst1 : BUFPLL
 		generic map(
@@ -442,4 +439,5 @@ begin
 			reset_i3(reset_i3'length - 1 downto 3) <= (others => '1');
 		end if;
 	end process;
+
 end Behavioral;

@@ -1,5 +1,4 @@
 ghdl_test/
-test/
 *.gen.vhd
 # iSim
 isim/

@@ -74,7 +74,11 @@ begin
 				timeout_ctr := G_TIMEOUT;
 				stable_ctr  := G_STABLE_THRESH;
 			else
-				o_stable <= '1' when active and stable_ctr = 0 else '0'; 
+				if active and stable_ctr = 0 then
+					o_stable <= '1';
+				else 
+					o_stable <= '0';
+				end if;
 				-- count down stable counter at each edge when active
 				if active then
 					if ext_toggle_edge = '1' and stable_ctr > 0 then

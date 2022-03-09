@@ -78,6 +78,7 @@ entity icescint is
 		i_sda_in              : in    std_logic;
 		o_timing_signal       : out   std_logic;
 		ignore                : out   bit -- because VDHL does not allow trailing commas
+
 	);
 end icescint;
 
@@ -536,6 +537,7 @@ begin
 			registerRead  => tmp05_0r,
 			registerWrite => tmp05_0w
 		);
+
 
 	---  Read fast aller daten von Kanal 0 
 	ltm9007_14r.testMode                   <= ltm9007_14_0r.testMode;

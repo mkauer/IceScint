@@ -158,6 +158,31 @@ end icescint_io;
 architecture behaviour of icescint_io is
 	attribute keep : string;
 
+	signal clk_10m_osc  : std_logic;
+	signal clk_10m_wr   : std_logic;
+	signal clk_10m_gps  : std_logic;
+	signal clk_platform : std_logic;
+
+	signal rst_ext_async : std_logic;
+	signal rst_10m_osc   : std_logic;
+	signal rst_platform  : std_logic;
+
+	signal plat_dcm_locked : std_logic;
+	signal plat_rst_input  : std_logic;
+
+	signal plat_ebi_data_out : std_logic_vector(15 downto 0);
+
+	signal plat_ebi_read_async  : std_logic;
+	signal plat_ebi_write_async : std_logic;
+	signal plat_ebi_read        : std_logic;
+	signal plat_ebi_write       : std_logic;
+	signal plat_user2regs       : user2regs_io_t;
+	signal plat_regs2user       : regs2user_io_t;
+
+	----------------------------------------------------------------------------
+	-- LEGACY BELOW
+	----------------------------------------------------------------------------
+
 	signal radio_drs4_resetn   : std_logic;
 	signal radio_drs4_refclock : std_logic;
 	signal radio_drs4_plllock  : std_logic_vector(0 to 2);
@@ -180,6 +205,9 @@ architecture behaviour of icescint_io is
 	signal radio_dac_do        : std_logic;
 	signal radio_dac_sck       : std_logic;
 	signal radio_power24n      : std_logic;
+
+	-- TODO: rename and clean up
+	signal ebi_data_out_muxed : register_t;
 
 	signal ebi_address  : std_logic_vector(23 downto 0);
 	signal ebi_data_in  : std_logic_vector(15 downto 0);
@@ -217,6 +245,7 @@ begin
 
 	-- LEDs
 	--	leds(1) <= sys_clock_select;
+
 
 	----------------------------------------------------------------------------
 	-- IO buffers
@@ -314,6 +343,9 @@ begin
 	ebi_select   <= not I_EBI1_NCS2;
 	ebi_address  <= "000" & I_EBI1_ADDR;
 	O_EBI1_NWAIT <= '1';
+
+	ebi_data_out_muxed <= ebi_data_out when I_EBI1_ADDR(16) = '0' else plat_ebi_data_out;
+
 	gen_ebi_data : for i in 0 to 15 generate
 		iobuf_inst : IOBUF
 			generic map(
