@@ -468,17 +468,17 @@ begin
 						when x"0002" => readDataBuffer <= registerb;
 						when x"0004" => readDataBuffer <= x"5555";-- test
 						when x"0006" => readDataBuffer <= x"aaaa";-- test
-						when x"0008" => readDataBuffer <= x"2021";-- jahr
-						when x"000a" => readDataBuffer <= x"0005";-- monat
-						when x"000c" => readDataBuffer <= x"0004";-- tag 
-						when x"000e" => readDataBuffer <= x"0300";-- version
+						when x"0008" => readDataBuffer <= x"2022";-- year/jahr
+						when x"000a" => readDataBuffer <= x"0003";-- month/monat
+						when x"000c" => readDataBuffer <= x"0009";-- day/tag
+						when x"000e" => readDataBuffer <= x"0301";-- version
 						when x"0010" => readDataBuffer <= x"00" & modus;--modusregister read&write
 						when x"0012" => readDataBuffer <= (not dummycnt) & dummycnt;
 							inccnt                         <= not controlBus.address(0) xor modus(0);
 							-- wenn modus(0)=0 dann wird auf adresse "0012" getriggert
 							-- wenn modus(0)=1 dann wird auf adresse "4012" getriggert
 
-							--					when x"0100" => readDataBuffer <= eventFifoSystem_0r.dmaBuffer; eventFifoSystem_0w.nextWord <= '1'; -- autoreset
+							-- when x"0100" => readDataBuffer <= eventFifoSystem_0r.dmaBuffer; eventFifoSystem_0w.nextWord <= '1'; -- autoreset
 						when x"0100" => readDataBuffer <= eventFifoSystem_0r.dmaBuffer;
 							eventFifoSystem_0w.nextWord    <= not controlBus.address(0) xor modus(0); -- autoreset
 							-- wenn modus(0)=0 dann wird auf adresse "0100" getriggert

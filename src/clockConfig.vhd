@@ -53,6 +53,8 @@ architecture Behavioral of clockConfig is
 	signal pll1_clko_960             : std_logic                    := '0';
 	signal pll1_clk0_div8_120        : std_logic                    := '0';
 	signal pll1_clk0_div8_120_global : std_logic                    := '0';
+        -- 2022-03-09 mbk added pll1_clko_div16_60
+	signal pll1_clko_div16_60        : std_logic                    := '0';
 	signal dcm3_clko_30              : std_logic                    := '0';
 	signal dcm3_locked               : std_logic                    := '0';
 	signal dcm3_status               : std_logic_vector(7 downto 0) := x"00";
@@ -72,6 +74,8 @@ architecture Behavioral of clockConfig is
 	signal reset_i0          : std_logic_vector(7 downto 0) := x"ff";
 	signal reset_i1          : std_logic_vector(7 downto 0) := x"ff";
 	signal reset_i2          : std_logic_vector(7 downto 0) := x"ff";
+        -- 2022-03-09 mbk added reset_i3
+	signal reset_i3          : std_logic_vector(7 downto 0) := x"ff";
 	signal clockErrorTrigger : std_logic                    := '0';
 	signal clockErrorAdc     : std_logic                    := '0';
 	--	signal clockErrorAll : std_logic := '0';
