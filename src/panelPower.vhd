@@ -28,45 +28,46 @@ use work.types.all;
 --use UNISIM.VComponents.all;
 
 entity panelPower is
-	port (
-		nPowerOn      : out std_logic; --_vector(2 downto 0);
-		registerRead  : out panelPower_registerRead_t;
-		registerWrite : in panelPower_registerWrite_t
-	);
+    port (
+        nPowerOn      : out std_logic;  --_vector(2 downto 0);
+        registerRead  : out panelPower_registerRead_t;
+        registerWrite : in  panelPower_registerWrite_t
+        );
 end panelPower;
 
 architecture Behavioral of panelPower is
 
-	signal powerOn           : std_logic                 := '0';
-	signal panelPowerCounter : integer range 0 to 130000 := 0;
+    signal powerOn           : std_logic                 := '0';
+    signal panelPowerCounter : integer range 0 to 130000 := 0;
 
 begin
 
-	nPowerOn <= not(powerOn); -- & powerOn & powerOn);
+    nPowerOn <= not(powerOn);           -- Taxi <= 3.0
+    --nPowerOn <= powerOn; -- Taxi-3.1, Taxi-3.2
 
-	P1 : process (registerWrite.clock)
-	begin
-		if rising_edge(registerWrite.clock) then
-			if ((registerWrite.reset = '1') or (registerWrite.init = '1')) then
-				powerOn           <= '0';
-				panelPowerCounter <= 0;
-			else
-				--				if(panelPowerCounter >= 125000) then
-				--					powerOn <= '1';
-				--				elsif(panelPowerCounter = 125000) then
-				--					powerOn <= '0';
-				--				else
-				--					panelPowerCounter <= panelPowerCounter + 1;
-				--				end if;
+    P1 : process (registerWrite.clock)
+    begin
+        if rising_edge(registerWrite.clock) then
+            if ((registerWrite.reset = '1') or (registerWrite.init = '1')) then
+                powerOn           <= '0';
+                panelPowerCounter <= 0;
+            else
+                --if(panelPowerCounter >= 125000) then
+                --  powerOn <= '1';
+                --elsif(panelPowerCounter = 125000) then
+                --  powerOn <= '0';
+                --else
+                --  panelPowerCounter <= panelPowerCounter + 1;
+                --end if;
 
-				if (registerWrite.enable = '1') then
-					powerOn <= '1';
-				else
-					powerOn <= '0';
-				end if;
+                if (registerWrite.enable = '1') then
+                    powerOn <= '1';
+                else
+                    powerOn <= '0';
+                end if;
 
-			end if;
-		end if;
-	end process P1;
+            end if;
+        end if;
+    end process P1;
 
 end Behavioral;

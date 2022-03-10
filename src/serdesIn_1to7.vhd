@@ -12,42 +12,42 @@
 -- \   \  /  \
 --  \___\/\___\
 -- 
---Device: 	Spartan 6
---Purpose:  	D-bit generic 1:n data receiver module with differential inputs
--- 		Takes in 1 bit of differential data and deserialises this to n bits
--- 		data is received LSB first
--- 		Parallel output word : D*S-1, D*S-2 ..... 1, 0
---		Serial input words when DATA_STRIPING = PER_CLOCK (default) :
---		Line0     : 0,   ...... D*S-(S+0)
--- 		Line1 	  : 1,   ...... D*S-(S+1)
--- 		Line(D-2) : .           .
--- 		Line(D-1) : D-1, ...... D*S-1
+--Device:       Spartan 6
+--Purpose:      D-bit generic 1:n data receiver module with differential inputs
+--              Takes in 1 bit of differential data and deserialises this to n bits
+--              data is received LSB first
+--              Parallel output word : D*S-1, D*S-2 ..... 1, 0
+--              Serial input words when DATA_STRIPING = PER_CLOCK (default) :
+--              Line0     : 0,   ...... D*S-(S+0)
+--              Line1     : 1,   ...... D*S-(S+1)
+--              Line(D-2) : .           .
+--              Line(D-1) : D-1, ...... D*S-1
 --
---		Serial input words when DATA_STRIPING = PER_CHANL :
---		Line0     : 0,       ...... S-1
--- 		Line1 	  : 1*S,     ...... 2*S-1
--- 		Line(D-2) : .               .
--- 		Line(D-1) : (D-1)*S, ...... D*S-1
+--              Serial input words when DATA_STRIPING = PER_CHANL :
+--              Line0     : 0,       ...... S-1
+--              Line1     : 1*S,     ...... 2*S-1
+--              Line(D-2) : .               .
+--              Line(D-1) : (D-1)*S, ...... D*S-1
 --
---		Includes state machine to control CAL and the phase detector
---		Data inversion can be accomplished via the RX_RX_SWAP_MASK 
---		parameter if required
+--              Includes state machine to control CAL and the phase detector
+--              Data inversion can be accomplished via the RX_RX_SWAP_MASK 
+--              parameter if required
 --
 --Reference:
 --    
 --Revision History:
 --    Rev 1.0 - First created (nicks)
 --    Rev 1.1 - Modified (nicks)
---		- phase detector state machine moved down in the hierarchy to line up with the version in coregen, will need adding to ISE project
---		- DATA_STRIPING added
+--              - phase detector state machine moved down in the hierarchy to line up with the version in coregen, will need adding to ISE project
+--              - DATA_STRIPING added
 --
---	  Rev 1.x -bitslip handling changed (marko)
+--        Rev 1.x -bitslip handling changed (marko)
 --
 ------------------------------------------------------------------------------
 --
 --  Disclaimer: 
 --
---		This disclaimer is not a license and does not grant any rights to the materials 
+--              This disclaimer is not a license and does not grant any rights to the materials 
 --              distributed herewith. Except as otherwise provided in a valid license issued to you 
 --              by Xilinx, and to the maximum extent permitted by applicable law: 
 --              (1) THESE MATERIALS ARE MADE AVAILABLE "AS IS" AND WITH ALL FAULTS, 
@@ -63,13 +63,13 @@
 --
 --  Critical Applications:
 --
---		Xilinx products are not designed or intended to be fail-safe, or for use in any application 
---		requiring fail-safe performance, such as life-support or safety devices or systems, 
---		Class III medical devices, nuclear facilities, applications related to the deployment of airbags,
---		or any other applications that could lead to death, personal injury, or severe property or 
---		environmental damage (individually and collectively, "Critical Applications"). Customer assumes 
---		the sole risk and liability of any use of Xilinx products in Critical Applications, subject only 
---		to applicable laws and regulations governing limitations on product liability.
+--              Xilinx products are not designed or intended to be fail-safe, or for use in any application 
+--              requiring fail-safe performance, such as life-support or safety devices or systems, 
+--              Class III medical devices, nuclear facilities, applications related to the deployment of airbags,
+--              or any other applications that could lead to death, personal injury, or severe property or 
+--              environmental damage (individually and collectively, "Critical Applications"). Customer assumes 
+--              the sole risk and liability of any use of Xilinx products in Critical Applications, subject only 
+--              to applicable laws and regulations governing limitations on product liability.
 --
 --  THIS COPYRIGHT NOTICE AND DISCLAIMER MUST BE RETAINED AS PART OF THIS FILE AT ALL TIMES.
 --
@@ -84,296 +84,296 @@ library unisim;
 use unisim.vcomponents.all;
 
 entity serdesIn_1to7 is
-	generic (
-		S             : integer := 7;            -- Parameter to set the serdes factor 1..8
-		D             : integer := 4;            -- Set the number of inputs and outputs
-		DIFF_TERM     : boolean := false;        -- Enable or disable internal differential termination
-		DATA_STRIPING : string  := "PER_CHANL"); -- Used to determine method for mapping input parallel word to output serial words
-	port (
-		use_phase_detector : in std_logic;                        -- Set generation of phase detector logic
-		datain_p           : in std_logic_vector(D - 1 downto 0); -- Input from LVDS receiver pin
-		datain_n           : in std_logic_vector(D - 1 downto 0); -- Input from LVDS receiver pin
-		--		rxioclk			:  in std_logic ;				-- IO Clock network
-		--		rxserdesstrobe		:  in std_logic ;				-- Parallel data capture strobe
-		--		reset			:  in std_logic ;				-- Reset line
-		--		gclk			:  in std_logic ;				-- Global clock
-		adcClocks      : in adcClocks_t;
-		bitslipStart   : in std_logic;                                -- 
-		bitslipDone    : out std_logic;                               -- 
-		bitslipFailed  : out std_logic;                               -- 
-		bitslipPattern : in std_logic_vector(S - 1 downto 0);         -- 
-		debug_in       : in std_logic_vector(1 downto 0);             -- input debug data, set to "00" if not required
-		dataOut        : out std_logic_vector((D * S) - 1 downto 0);  -- Output data
-		debug          : out std_logic_vector((3 * D) + 5 downto 0)); -- Debug bus, 5D+5 = 3 lines per input (from inc, mux and ce) + 6, leave nc if debug not required
+    generic (
+        S             : integer := 7;  -- Parameter to set the serdes factor 1..8
+        D             : integer := 4;   -- Set the number of inputs and outputs
+        DIFF_TERM     : boolean := false;  -- Enable or disable internal differential termination
+        DATA_STRIPING : string  := "PER_CHANL");  -- Used to determine method for mapping input parallel word to output serial words
+    port (
+        use_phase_detector : in  std_logic;  -- Set generation of phase detector logic
+        datain_p           : in  std_logic_vector(D - 1 downto 0);  -- Input from LVDS receiver pin
+        datain_n           : in  std_logic_vector(D - 1 downto 0);  -- Input from LVDS receiver pin
+        --          rxioclk                 :  in std_logic ;                               -- IO Clock network
+        --          rxserdesstrobe          :  in std_logic ;                               -- Parallel data capture strobe
+        --          reset                   :  in std_logic ;                               -- Reset line
+        --          gclk                    :  in std_logic ;                               -- Global clock
+        adcClocks          : in  adcClocks_t;
+        bitslipStart       : in  std_logic;  -- 
+        bitslipDone        : out std_logic;  -- 
+        bitslipFailed      : out std_logic;  -- 
+        bitslipPattern     : in  std_logic_vector(S - 1 downto 0);  -- 
+        debug_in           : in  std_logic_vector(1 downto 0);  -- input debug data, set to "00" if not required
+        dataOut            : out std_logic_vector((D * S) - 1 downto 0);  -- Output data
+        debug              : out std_logic_vector((3 * D) + 5 downto 0));  -- Debug bus, 5D+5 = 3 lines per input (from inc, mux and ce) + 6, leave nc if debug not required
 end serdesIn_1to7;
 
 architecture behavioral of serdesIn_1to7 is
 
-	component phase_detector
-		generic (
-			D : integer := 16); -- Set the number of inputs
-		port (
-			use_phase_detector : in std_logic;                                -- Set generation of phase detector logic
-			busy               : in std_logic_vector(D - 1 downto 0);         -- BUSY inputs from IODELAY2s
-			valid              : in std_logic_vector(D - 1 downto 0);         -- VALID inputs from IODELAY2s
-			inc_dec            : in std_logic_vector(D - 1 downto 0);         -- INC_DEC inputs from ISERDES2s
-			reset              : in std_logic;                                -- Reset line
-			gclk               : in std_logic;                                -- Global clock
-			debug_in           : in std_logic_vector(1 downto 0);             -- input debug data
-			cal_master         : out std_logic;                               -- Output to cal pins on master IODELAY2s
-			cal_slave          : out std_logic;                               -- Output to cal pins on slave IODELAY2s
-			rst_out            : out std_logic;                               -- Output to rst pins on master & slave IODELAY2s
-			ce                 : out std_logic_vector(D - 1 downto 0);        -- Outputs to ce pins on IODELAY2s
-			inc                : out std_logic_vector(D - 1 downto 0);        -- Outputs to inc pins on IODELAY2s
-			debug              : out std_logic_vector((3 * D) + 5 downto 0)); -- Debug bus, 3D+5 = 3 lines per input (from inc, mux and ce) + 6, leave nc if debug not required
-	end component;
+    component phase_detector
+        generic (
+            D : integer := 16);         -- Set the number of inputs
+        port (
+            use_phase_detector : in  std_logic;  -- Set generation of phase detector logic
+            busy               : in  std_logic_vector(D - 1 downto 0);  -- BUSY inputs from IODELAY2s
+            valid              : in  std_logic_vector(D - 1 downto 0);  -- VALID inputs from IODELAY2s
+            inc_dec            : in  std_logic_vector(D - 1 downto 0);  -- INC_DEC inputs from ISERDES2s
+            reset              : in  std_logic;  -- Reset line
+            gclk               : in  std_logic;  -- Global clock
+            debug_in           : in  std_logic_vector(1 downto 0);  -- input debug data
+            cal_master         : out std_logic;  -- Output to cal pins on master IODELAY2s
+            cal_slave          : out std_logic;  -- Output to cal pins on slave IODELAY2s
+            rst_out            : out std_logic;  -- Output to rst pins on master & slave IODELAY2s
+            ce                 : out std_logic_vector(D - 1 downto 0);  -- Outputs to ce pins on IODELAY2s
+            inc                : out std_logic_vector(D - 1 downto 0);  -- Outputs to inc pins on IODELAY2s
+            debug              : out std_logic_vector((3 * D) + 5 downto 0));  -- Debug bus, 3D+5 = 3 lines per input (from inc, mux and ce) + 6, leave nc if debug not required
+    end component;
 
-	signal ddly_m          : std_logic_vector(D - 1 downto 0); -- Master output from IODELAY1
-	signal ddly_s          : std_logic_vector(D - 1 downto 0); -- Slave output from IODELAY1
-	signal cascade         : std_logic_vector(D - 1 downto 0);
-	signal rx_data_in      : std_logic_vector(D - 1 downto 0);
-	signal rx_data_in_fix  : std_logic_vector(D - 1 downto 0);
-	signal busy_data       : std_logic_vector(D - 1 downto 0);
-	signal pd_edge         : std_logic_vector(D - 1 downto 0);
-	signal cal_data_slave  : std_logic;
-	signal cal_data_master : std_logic;
-	signal valid_data      : std_logic_vector(D - 1 downto 0);
-	signal rst_data        : std_logic;
-	signal mdataout        : std_logic_vector((8 * D) - 1 downto 0);
-	signal inc_data        : std_logic_vector(D - 1 downto 0);
-	signal ce_data         : std_logic_vector(D - 1 downto 0);
-	signal incdec_data     : std_logic_vector(D - 1 downto 0);
+    signal ddly_m          : std_logic_vector(D - 1 downto 0);  -- Master output from IODELAY1
+    signal ddly_s          : std_logic_vector(D - 1 downto 0);  -- Slave output from IODELAY1
+    signal cascade         : std_logic_vector(D - 1 downto 0);
+    signal rx_data_in      : std_logic_vector(D - 1 downto 0);
+    signal rx_data_in_fix  : std_logic_vector(D - 1 downto 0);
+    signal busy_data       : std_logic_vector(D - 1 downto 0);
+    signal pd_edge         : std_logic_vector(D - 1 downto 0);
+    signal cal_data_slave  : std_logic;
+    signal cal_data_master : std_logic;
+    signal valid_data      : std_logic_vector(D - 1 downto 0);
+    signal rst_data        : std_logic;
+    signal mdataout        : std_logic_vector((8 * D) - 1 downto 0);
+    signal inc_data        : std_logic_vector(D - 1 downto 0);
+    signal ce_data         : std_logic_vector(D - 1 downto 0);
+    signal incdec_data     : std_logic_vector(D - 1 downto 0);
 
-	constant RX_SWAP_MASK : std_logic_vector(D - 1 downto 0) := (others => '0'); -- pinswap mask for input bits (0 = no swap (default), 1 = swap). Allows inputs to be connected the wrong way round to ease PCB routing.
+    constant RX_SWAP_MASK : std_logic_vector(D - 1 downto 0) := (others => '0');  -- pinswap mask for input bits (0 = no swap (default), 1 = swap). Allows inputs to be connected the wrong way round to ease PCB routing.
 
-	signal rxioclk        : std_logic;
-	signal rxserdesstrobe : std_logic;
-	signal gclk           : std_logic;
+    signal rxioclk        : std_logic;
+    signal rxserdesstrobe : std_logic;
+    signal gclk           : std_logic;
 
-	signal bitslip : std_logic := '0';
-	type stateBitslip_t is (idle, run1, run2, run3);
-	signal stateBitslip       : stateBitslip_t                         := idle;
-	signal bitslipCounter     : integer range 0 to 31                  := 0;
-	signal bitslipWaitCounter : integer range 0 to 31                  := 0;
-	signal bitslipStartSync   : std_logic_vector(4 downto 0)           := (others => '0');
-	signal data_out           : std_logic_vector((D * S) - 1 downto 0) := (others => '0');
-	signal bitslipDoneShift   : std_logic_vector(4 downto 0)           := (others => '0');
+    signal bitslip            : std_logic                              := '0';
+    type stateBitslip_t is (idle, run1, run2, run3);
+    signal stateBitslip       : stateBitslip_t                         := idle;
+    signal bitslipCounter     : integer range 0 to 31                  := 0;
+    signal bitslipWaitCounter : integer range 0 to 31                  := 0;
+    signal bitslipStartSync   : std_logic_vector(4 downto 0)           := (others => '0');
+    signal data_out           : std_logic_vector((D * S) - 1 downto 0) := (others => '0');
+    signal bitslipDoneShift   : std_logic_vector(4 downto 0)           := (others => '0');
 
-	signal bitslipPatternLatched : std_logic_vector(S - 1 downto 0);
+    signal bitslipPatternLatched : std_logic_vector(S - 1 downto 0);
 
-	signal reset : std_logic := '0';
+    signal reset : std_logic := '0';
 
 begin
 
-	rxioclk        <= adcClocks.clk_462_serdes_io;
-	rxserdesstrobe <= adcClocks.serdes_strobe_462;
-	gclk           <= adcClocks.clk_66_serdes_div7;
-	reset          <= adcClocks.rst_div7;
-	--reset <= adcClocks.asyncReset;
+    rxioclk        <= adcClocks.clk_462_serdes_io;
+    rxserdesstrobe <= adcClocks.serdes_strobe_462;
+    gclk           <= adcClocks.clk_66_serdes_div7;
+    reset          <= adcClocks.rst_div7;
+    --reset <= adcClocks.asyncReset;
 
-	dataOut <= data_out;
+    dataOut <= data_out;
 
-	bitslipDone <= bitslipDoneShift(0);
+    bitslipDone <= bitslipDoneShift(0);
 
-	P_bitslip : process (gclk)
-	begin
-		if rising_edge(gclk) then
-			bitslip <= '0'; -- autoreset
-			if (reset = '1') then
-				stateBitslip     <= idle;
-				bitslipStartSync <= (others => '0');
-				bitslipDoneShift <= (others => '0');
-			else
-				bitslipStartSync <= bitslipStart & bitslipStartSync(bitslipStartSync'length - 1 downto 1);
-				bitslipDoneShift <= "0" & bitslipDoneShift(bitslipDoneShift'length - 1 downto 1);
+    P_bitslip : process (gclk)
+    begin
+        if rising_edge(gclk) then
+            bitslip <= '0';             -- autoreset
+            if (reset = '1') then
+                stateBitslip     <= idle;
+                bitslipStartSync <= (others => '0');
+                bitslipDoneShift <= (others => '0');
+            else
+                bitslipStartSync <= bitslipStart & bitslipStartSync(bitslipStartSync'length - 1 downto 1);
+                bitslipDoneShift <= "0" & bitslipDoneShift(bitslipDoneShift'length - 1 downto 1);
 
-				case stateBitslip is
-					when run1 =>
-						if (bitslipPatternLatched /= data_out(S - 1 downto 0)) then
-							bitslip            <= '1'; -- autoreset
-							stateBitslip       <= run2;
-							bitslipCounter     <= bitslipCounter + 1;
-							bitslipWaitCounter <= 9;
-						else
-							stateBitslip  <= run3;
-							bitslipFailed <= '0';
-						end if;
-						if (bitslipCounter >= 15) then
-							stateBitslip  <= run3;
-							bitslipFailed <= '1';
-						end if;
+                case stateBitslip is
+                    when run1 =>
+                        if (bitslipPatternLatched /= data_out(S - 1 downto 0)) then
+                            bitslip            <= '1';  -- autoreset
+                            stateBitslip       <= run2;
+                            bitslipCounter     <= bitslipCounter + 1;
+                            bitslipWaitCounter <= 9;
+                        else
+                            stateBitslip  <= run3;
+                            bitslipFailed <= '0';
+                        end if;
+                        if (bitslipCounter >= 15) then
+                            stateBitslip  <= run3;
+                            bitslipFailed <= '1';
+                        end if;
 
-					when run2 =>
-						bitslipWaitCounter <= bitslipWaitCounter - 1;
-						if (bitslipWaitCounter = 0) then
-							stateBitslip <= run1;
-						end if;
+                    when run2 =>
+                        bitslipWaitCounter <= bitslipWaitCounter - 1;
+                        if (bitslipWaitCounter = 0) then
+                            stateBitslip <= run1;
+                        end if;
 
-					when run3                   =>
-						bitslipDoneShift <= (others => '1');
-						stateBitslip     <= idle;
+                    when run3 =>
+                        bitslipDoneShift <= (others => '1');
+                        stateBitslip     <= idle;
 
-					when idle =>
-						if ((bitslipStartSync(1) = '1') and (bitslipStartSync(0) = '0')) then
-							stateBitslip          <= run1;
-							bitslipCounter        <= 0;
-							bitslipPatternLatched <= bitslipPattern;
-						end if;
+                    when idle =>
+                        if ((bitslipStartSync(1) = '1') and (bitslipStartSync(0) = '0')) then
+                            stateBitslip          <= run1;
+                            bitslipCounter        <= 0;
+                            bitslipPatternLatched <= bitslipPattern;
+                        end if;
 
-					when others => stateBitslip <= idle;
-				end case;
-			end if;
-		end if;
-	end process P_bitslip;
+                    when others => stateBitslip <= idle;
+                end case;
+            end if;
+        end if;
+    end process P_bitslip;
 
-	pd_state_machine : phase_detector generic map(
-		D => D) -- Set the number of inputs
-	port map(
-		use_phase_detector => use_phase_detector,
-		busy               => busy_data,
-		valid              => valid_data,
-		inc_dec            => incdec_data,
-		reset              => reset,
-		gclk               => gclk,
-		debug_in           => debug_in,
-		cal_master         => cal_data_master,
-		cal_slave          => cal_data_slave,
-		rst_out            => rst_data,
-		ce                 => ce_data,
-		inc                => inc_data,
-		debug              => debug);
+    pd_state_machine : phase_detector generic map(
+        D => D)                         -- Set the number of inputs
+        port map(
+            use_phase_detector => use_phase_detector,
+            busy               => busy_data,
+            valid              => valid_data,
+            inc_dec            => incdec_data,
+            reset              => reset,
+            gclk               => gclk,
+            debug_in           => debug_in,
+            cal_master         => cal_data_master,
+            cal_slave          => cal_data_slave,
+            rst_out            => rst_data,
+            ce                 => ce_data,
+            inc                => inc_data,
+            debug              => debug);
 
-	loop0 : for i in 0 to (D - 1) generate
-		rx_data_in_fix(i) <= rx_data_in(i) xor RX_SWAP_MASK(i); -- Invert signals as required
+    loop0 : for i in 0 to (D - 1) generate
+        rx_data_in_fix(i) <= rx_data_in(i) xor RX_SWAP_MASK(i);  -- Invert signals as required
 
-		iob_clk_in : IBUFDS generic map(
-			DIFF_TERM => DIFF_TERM)
-		port map(
-			I  => datain_p(i),
-			IB => datain_n(i),
-			O  => rx_data_in(i));
+        iob_clk_in : IBUFDS generic map(
+            DIFF_TERM => DIFF_TERM)
+            port map(
+                I  => datain_p(i),
+                IB => datain_n(i),
+                O  => rx_data_in(i));
 
-		iodelay_m : IODELAY2 generic map(
-			DATA_RATE          => "SDR",                 -- <SDR>, DDR
-			IDELAY_VALUE       => 0,                     -- {0 ... 255}
-			IDELAY2_VALUE      => 0,                     -- {0 ... 255}
-			IDELAY_MODE        => "NORMAL",              -- NORMAL, PCI
-			ODELAY_VALUE       => 0,                     -- {0 ... 255}
-			IDELAY_TYPE        => "DIFF_PHASE_DETECTOR", -- "DEFAULT", "DIFF_PHASE_DETECTOR", "FIXED", "VARIABLE_FROM_HALF_MAX", "VARIABLE_FROM_ZERO"
-			COUNTER_WRAPAROUND => "WRAPAROUND",          -- <STAY_AT_LIMIT>, WRAPAROUND
-			DELAY_SRC          => "IDATAIN",             -- "IO", "IDATAIN", "ODATAIN"
-			SERDES_MODE        => "MASTER",              -- <NONE>, MASTER, SLAVE
-			SIM_TAPDELAY_VALUE => 49)                    --
-		port map(
-			IDATAIN  => rx_data_in_fix(i), -- data from primary IOB
-			TOUT     => open,              -- tri-state signal to IOB
-			DOUT     => open,              -- output data to IOB
-			T        => '1',               -- tri-state control from OLOGIC/OSERDES2 		
-			ODATAIN  => '0',               -- data from OLOGIC/OSERDES2
-			DATAOUT  => ddly_m(i),         -- Output data 1 to ILOGIC/ISERDES2
-			DATAOUT2 => open,              -- Output data 2 to ILOGIC/ISERDES2
-			IOCLK0   => rxioclk,           -- High speed clock for calibration
-			IOCLK1   => '0',               -- High speed clock for calibration
-			CLK      => gclk,              -- Fabric clock (GCLK) for control signals
-			CAL      => cal_data_master,   -- Calibrate control signal
-			INC      => inc_data(i),       -- Increment counter
-			CE       => ce_data(i),        -- Clock Enable
-			RST      => rst_data,          -- Reset delay line
-			BUSY     => open);             -- output signal indicating sync circuit has finished / calibration has finished 
+        iodelay_m : IODELAY2 generic map(
+            DATA_RATE          => "SDR",         -- <SDR>, DDR
+            IDELAY_VALUE       => 0,    -- {0 ... 255}
+            IDELAY2_VALUE      => 0,    -- {0 ... 255}
+            IDELAY_MODE        => "NORMAL",      -- NORMAL, PCI
+            ODELAY_VALUE       => 0,    -- {0 ... 255}
+            IDELAY_TYPE        => "DIFF_PHASE_DETECTOR",  -- "DEFAULT", "DIFF_PHASE_DETECTOR", "FIXED", "VARIABLE_FROM_HALF_MAX", "VARIABLE_FROM_ZERO"
+            COUNTER_WRAPAROUND => "WRAPAROUND",  -- <STAY_AT_LIMIT>, WRAPAROUND
+            DELAY_SRC          => "IDATAIN",     -- "IO", "IDATAIN", "ODATAIN"
+            SERDES_MODE        => "MASTER",      -- <NONE>, MASTER, SLAVE
+            SIM_TAPDELAY_VALUE => 49)   --
+            port map(
+                IDATAIN  => rx_data_in_fix(i),   -- data from primary IOB
+                TOUT     => open,       -- tri-state signal to IOB
+                DOUT     => open,       -- output data to IOB
+                T        => '1',  -- tri-state control from OLOGIC/OSERDES2            
+                ODATAIN  => '0',        -- data from OLOGIC/OSERDES2
+                DATAOUT  => ddly_m(i),  -- Output data 1 to ILOGIC/ISERDES2
+                DATAOUT2 => open,       -- Output data 2 to ILOGIC/ISERDES2
+                IOCLK0   => rxioclk,    -- High speed clock for calibration
+                IOCLK1   => '0',        -- High speed clock for calibration
+                CLK      => gclk,   -- Fabric clock (GCLK) for control signals
+                CAL      => cal_data_master,     -- Calibrate control signal
+                INC      => inc_data(i),         -- Increment counter
+                CE       => ce_data(i),          -- Clock Enable
+                RST      => rst_data,   -- Reset delay line
+                BUSY     => open);  -- output signal indicating sync circuit has finished / calibration has finished 
 
-		iodelay_s : IODELAY2 generic map(
-			DATA_RATE          => "SDR",                 -- <SDR>, DDR
-			IDELAY_VALUE       => 0,                     -- {0 ... 255}
-			IDELAY2_VALUE      => 0,                     -- {0 ... 255}
-			IDELAY_MODE        => "NORMAL",              -- NORMAL, PCI
-			ODELAY_VALUE       => 0,                     -- {0 ... 255}
-			IDELAY_TYPE        => "DIFF_PHASE_DETECTOR", -- "DEFAULT", "DIFF_PHASE_DETECTOR", "FIXED", "VARIABLE_FROM_HALF_MAX", "VARIABLE_FROM_ZERO"
-			COUNTER_WRAPAROUND => "WRAPAROUND",          -- <STAY_AT_LIMIT>, WRAPAROUND
-			DELAY_SRC          => "IDATAIN",             -- "IO", "IDATAIN", "ODATAIN"
-			SERDES_MODE        => "SLAVE",               -- <NONE>, MASTER, SLAVE
-			SIM_TAPDELAY_VALUE => 49)                    --
-		port map(
-			IDATAIN  => rx_data_in_fix(i), -- data from primary IOB
-			TOUT     => open,              -- tri-state signal to IOB
-			DOUT     => open,              -- output data to IOB
-			T        => '1',               -- tri-state control from OLOGIC/OSERDES2
-			ODATAIN  => '0',               -- data from OLOGIC/OSERDES2
-			DATAOUT  => ddly_s(i),         -- Output data 1 to ILOGIC/ISERDES2
-			DATAOUT2 => open,              -- Output data 2 to ILOGIC/ISERDES2
-			IOCLK0   => rxioclk,           -- High speed clock for calibration
-			IOCLK1   => '0',               -- High speed clock for calibration
-			CLK      => gclk,              -- Fabric clock (GCLK) for control signals
-			CAL      => cal_data_slave,    -- Calibrate control signal
-			INC      => inc_data(i),       -- Increment counter
-			CE       => ce_data(i),        -- Clock Enable
-			RST      => rst_data,          -- Reset delay line
-			BUSY     => busy_data(i));     -- output signal indicating sync circuit has finished / calibration has finished
+        iodelay_s : IODELAY2 generic map(
+            DATA_RATE          => "SDR",    -- <SDR>, DDR
+            IDELAY_VALUE       => 0,    -- {0 ... 255}
+            IDELAY2_VALUE      => 0,    -- {0 ... 255}
+            IDELAY_MODE        => "NORMAL",      -- NORMAL, PCI
+            ODELAY_VALUE       => 0,    -- {0 ... 255}
+            IDELAY_TYPE        => "DIFF_PHASE_DETECTOR",  -- "DEFAULT", "DIFF_PHASE_DETECTOR", "FIXED", "VARIABLE_FROM_HALF_MAX", "VARIABLE_FROM_ZERO"
+            COUNTER_WRAPAROUND => "WRAPAROUND",  -- <STAY_AT_LIMIT>, WRAPAROUND
+            DELAY_SRC          => "IDATAIN",     -- "IO", "IDATAIN", "ODATAIN"
+            SERDES_MODE        => "SLAVE",  -- <NONE>, MASTER, SLAVE
+            SIM_TAPDELAY_VALUE => 49)   --
+            port map(
+                IDATAIN  => rx_data_in_fix(i),   -- data from primary IOB
+                TOUT     => open,       -- tri-state signal to IOB
+                DOUT     => open,       -- output data to IOB
+                T        => '1',   -- tri-state control from OLOGIC/OSERDES2
+                ODATAIN  => '0',        -- data from OLOGIC/OSERDES2
+                DATAOUT  => ddly_s(i),  -- Output data 1 to ILOGIC/ISERDES2
+                DATAOUT2 => open,       -- Output data 2 to ILOGIC/ISERDES2
+                IOCLK0   => rxioclk,    -- High speed clock for calibration
+                IOCLK1   => '0',        -- High speed clock for calibration
+                CLK      => gclk,  -- Fabric clock (GCLK) for control signals
+                CAL      => cal_data_slave,      -- Calibrate control signal
+                INC      => inc_data(i),    -- Increment counter
+                CE       => ce_data(i),     -- Clock Enable
+                RST      => rst_data,   -- Reset delay line
+                BUSY     => busy_data(i));  -- output signal indicating sync circuit has finished / calibration has finished
 
-		iserdes_m : ISERDES2 generic map(
-			DATA_WIDTH     => S,         -- SERDES word width.  This should match the setting is BUFPLL
-			DATA_RATE      => "SDR",     -- <SDR>, DDR
-			BITSLIP_ENABLE => TRUE,      -- <FALSE>, TRUE
-			SERDES_MODE    => "MASTER",  -- <DEFAULT>, MASTER, SLAVE
-			INTERFACE_TYPE => "RETIMED") -- NETWORKING, NETWORKING_PIPELINED, <RETIMED>
-		port map(
-			D         => ddly_m(i),
-			CE0       => '1',
-			CLK0      => rxioclk,
-			CLK1      => '0',
-			IOCE      => rxserdesstrobe,
-			RST       => reset,
-			CLKDIV    => gclk,
-			SHIFTIN   => pd_edge(i),
-			BITSLIP   => bitslip,
-			FABRICOUT => open,
-			Q4        => mdataout((8 * i) + 7),
-			Q3        => mdataout((8 * i) + 6),
-			Q2        => mdataout((8 * i) + 5),
-			Q1        => mdataout((8 * i) + 4),
-			DFB       => open,
-			CFB0      => open,
-			CFB1      => open,
-			VALID     => valid_data(i),
-			INCDEC    => incdec_data(i),
-			SHIFTOUT  => cascade(i));
+        iserdes_m : ISERDES2 generic map(
+            DATA_WIDTH     => S,  -- SERDES word width.  This should match the setting is BUFPLL
+            DATA_RATE      => "SDR",    -- <SDR>, DDR
+            BITSLIP_ENABLE => true,     -- <FALSE>, TRUE
+            SERDES_MODE    => "MASTER",   -- <DEFAULT>, MASTER, SLAVE
+            INTERFACE_TYPE => "RETIMED")  -- NETWORKING, NETWORKING_PIPELINED, <RETIMED>
+            port map(
+                D         => ddly_m(i),
+                CE0       => '1',
+                CLK0      => rxioclk,
+                CLK1      => '0',
+                IOCE      => rxserdesstrobe,
+                RST       => reset,
+                CLKDIV    => gclk,
+                SHIFTIN   => pd_edge(i),
+                BITSLIP   => bitslip,
+                FABRICOUT => open,
+                Q4        => mdataout((8 * i) + 7),
+                Q3        => mdataout((8 * i) + 6),
+                Q2        => mdataout((8 * i) + 5),
+                Q1        => mdataout((8 * i) + 4),
+                DFB       => open,
+                CFB0      => open,
+                CFB1      => open,
+                VALID     => valid_data(i),
+                INCDEC    => incdec_data(i),
+                SHIFTOUT  => cascade(i));
 
-		iserdes_s : ISERDES2 generic map(
-			DATA_WIDTH     => S,         -- SERDES word width.  This should match the setting is BUFPLL
-			DATA_RATE      => "SDR",     -- <SDR>, DDR
-			BITSLIP_ENABLE => TRUE,      -- <FALSE>, TRUE
-			SERDES_MODE    => "SLAVE",   -- <DEFAULT>, MASTER, SLAVE
-			INTERFACE_TYPE => "RETIMED") -- NETWORKING, NETWORKING_PIPELINED, <RETIMED>
-		port map(
-			D         => ddly_s(i),
-			CE0       => '1',
-			CLK0      => rxioclk,
-			CLK1      => '0',
-			IOCE      => rxserdesstrobe,
-			RST       => reset,
-			CLKDIV    => gclk,
-			SHIFTIN   => cascade(i),
-			BITSLIP   => bitslip,
-			FABRICOUT => open,
-			Q4        => mdataout((8 * i) + 3),
-			Q3        => mdataout((8 * i) + 2),
-			Q2        => mdataout((8 * i) + 1),
-			Q1        => mdataout((8 * i) + 0),
-			DFB       => open,
-			CFB0      => open,
-			CFB1      => open,
-			VALID     => open,
-			INCDEC    => open,
-			SHIFTOUT  => pd_edge(i));
+        iserdes_s : ISERDES2 generic map(
+            DATA_WIDTH     => S,  -- SERDES word width.  This should match the setting is BUFPLL
+            DATA_RATE      => "SDR",    -- <SDR>, DDR
+            BITSLIP_ENABLE => true,     -- <FALSE>, TRUE
+            SERDES_MODE    => "SLAVE",  -- <DEFAULT>, MASTER, SLAVE
+            INTERFACE_TYPE => "RETIMED")  -- NETWORKING, NETWORKING_PIPELINED, <RETIMED>
+            port map(
+                D         => ddly_s(i),
+                CE0       => '1',
+                CLK0      => rxioclk,
+                CLK1      => '0',
+                IOCE      => rxserdesstrobe,
+                RST       => reset,
+                CLKDIV    => gclk,
+                SHIFTIN   => cascade(i),
+                BITSLIP   => bitslip,
+                FABRICOUT => open,
+                Q4        => mdataout((8 * i) + 3),
+                Q3        => mdataout((8 * i) + 2),
+                Q2        => mdataout((8 * i) + 1),
+                Q1        => mdataout((8 * i) + 0),
+                DFB       => open,
+                CFB0      => open,
+                CFB1      => open,
+                VALID     => open,
+                INCDEC    => open,
+                SHIFTOUT  => pd_edge(i));
 
-		loop2 : for j in 7 downto (8 - S) generate
-			loop2a : if DATA_STRIPING = "PER_CLOCK" generate
-				data_out(((D * (j + S - 8)) + i)) <= mdataout((8 * i) + j);
-			end generate;
-			loop2b : if DATA_STRIPING = "PER_CHANL" generate
-				data_out(S * i + j + S - 8) <= mdataout((8 * i) + j);
-			end generate;
-		end generate;
-	end generate;
+        loop2 : for j in 7 downto (8 - S) generate
+            loop2a : if DATA_STRIPING = "PER_CLOCK" generate
+                data_out(((D * (j + S - 8)) + i)) <= mdataout((8 * i) + j);
+            end generate;
+            loop2b : if DATA_STRIPING = "PER_CHANL" generate
+                data_out(S * i + j + S - 8) <= mdataout((8 * i) + j);
+            end generate;
+        end generate;
+    end generate;
 
 end behavioral;
 ------------------------------------------------------------------------------------------------------------
