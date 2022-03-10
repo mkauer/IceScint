@@ -1,6 +1,3 @@
-#[submodule "lib/irig-decoder"]
-#	path = lib/irig-decoder
-#	url = https://github.com/jkelley/irig-decoder.git
 [submodule "lib/noasic"]
 	path = lib/noasic
 	url = https://github.com/noasic/noasic.git
