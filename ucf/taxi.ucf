@@ -1,3 +1,4 @@
+# -*- sh -*-
 # based on taxi_Pinswap.ucf from legacy
 # prevent config. signals from being used
 CONFIG PROHIBIT = AA20; # DIN

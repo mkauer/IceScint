@@ -22,7 +22,7 @@ module irig_width_decode (
         if (rst) begin
             clk_cnt <= 17'b0;
 	    //irigb_last = 1'b0;
-            irigb_last <= 1'b0; // 2022-03-09 mbk changed to unblocking
+            irigb_last <= 1'b0; // 2022-03-09 mkauer changed to unblocking
             irig_d0 <= 1'b0;
             irig_d1 <= 1'b0;
             irig_mark <= 1'b0;
