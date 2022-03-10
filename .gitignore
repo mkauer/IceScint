@@ -1,7 +1,7 @@
+# -*- sh -*-
 
 ghdl_test/
 *.gen.vhd
-# iSim
 isim/
 fuse.log
 fuse.xmsgs
